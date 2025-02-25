@@ -7,7 +7,9 @@ class household(models.Model):
 
     class Meta:
         db_table = 'household'  # Use the existing table name
-        managed = False  # Prevents Django from creating/modifying this table
+        managed = True  # Prevents Django from creating/modifying this table
+    def __str__ (self):
+        return self.address
 
 
 class citizen(models.Model):
@@ -21,4 +23,6 @@ class citizen(models.Model):
 
     class Meta:
         db_table = 'citizen'  # Use the existing table name
-        managed = False  # Prevents Django from creating/modifying this table
+        managed = True  # Prevents Django from creating/modifying this table
+    def __str__(self):
+        return self.name

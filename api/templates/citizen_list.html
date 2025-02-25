@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Citizen List</title>
+</head>
+<body>
+    <h1>Citizen List</h1>
+    <ul>
+    {% for citizen in citizens %}
+        <li>
+            <a href="{% url 'citizen_detail' citizen.citizen_id %}">
+                {{ citizen.name }} (ID: {{ citizen.citizen_id }})
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

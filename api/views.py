@@ -1,13 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import citizenSerializer
-from .models import citizen
+from .models import citizen, household
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
+from .forms import CitizenForm
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -49,3 +50,39 @@ def get_citizens(request, fields):
 
     data = [dict(zip(requested_fields, row)) for row in results]  # Convert result to JSON format
     return Response(data)  # DRF handles the response
+
+def add_citizen(request):
+    if request.method == 'POST':
+        form = CitizenForm(request.POST)
+        if form.is_valid():
+            household_id = form.cleaned_data['household']
+            parent_id = form.cleaned_data['parent']
+            household_inst = household.objects.get(household_id=household_id)
+            parent_inst = citizen.objects.get(citizen_id=parent_id)
+            citi = citizen(
+                citizen_id=form.cleaned_data['citizen_id'],
+                name=form.cleaned_data['name'],
+                gender=form.cleaned_data['gender'],
+                dob=form.cleaned_data['dob'],
+                educational_qualification=form.cleaned_data['educational_qualification'],
+                household=household_inst,
+                parent=parent_inst
+            )
+            print("Form is valid")
+            print(form.cleaned_data)
+            citi.save()
+            return redirect('')  # Replace with your success page URL
+    else:
+        form = CitizenForm()
+    return render(request, 'addcitizen.html', {'form': form})
+
+def home_page(request):
+    return render(request, 'index.html')
+
+def citizen_list(request):
+    citizens = citizen.objects.all()
+    return render(request, 'citizen_list.html', {'citizens': citizens})
+
+def citizen_detail(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen_detail.html', {'citizen': citi})

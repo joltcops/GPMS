@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Citizen Details</title>
+</head>
+<body>
+    <h1>Citizen Details</h1>
+    <p><strong>Name:</strong> {{ citizen.name }}</p>
+    <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
+    <p><strong>Gender:</strong> {{ citizen.gender }}</p>
+    <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
+    <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
+    <p><strong>Household:</strong> {{ citizen.household }}</p>
+    <p><strong>Parent:</strong> {{ citizen.parent }}</p>
+    
+    <a href="{% url 'citizen_list' %}">Back to Citizen List</a>
+</body>
+</html>

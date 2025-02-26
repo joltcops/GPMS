@@ -10,46 +10,23 @@ from django.http import JsonResponse
 from django.db import connection
 from .forms import CitizenForm
 
-@api_view(['GET'])
-def getRoutes(request):
-    routes=[
-        '/token',
-        '/token/refresh',
-    ]
-    return Response(routes)
+# @api_view(["GET"])
+# def get_citizens(request, fields):
+#     allowed_fields = {"name", "educational_qualification", "age", "gender"}  # Allowed columns
+#     requested_fields = fields.split(",")  # Convert comma-separated string to a list
+#     invalid_fields = set(requested_fields) - allowed_fields  # Check for invalid fields
 
-#Get all books
-@api_view(['GET'])
-def getcitizens(request):
-    citizens=citizen.objects.all()
-    CitizenSerializer=citizenSerializer(citizens, many=True)
-    return Response(CitizenSerializer.data)
+#     if invalid_fields:
+#         return Response({"error": f"Invalid fields: {', '.join(invalid_fields)}"}, status=400)
 
-@api_view(['POST'])
-def addcitizen(request):
-    data=request.data
-    CitizenSerializer=citizenSerializer(data=data)
-    if CitizenSerializer.is_valid():       
-        CitizenSerializer.save()
-    return Response(CitizenSerializer.data)
+#     fields_query = ", ".join(requested_fields)  # Convert list back to SQL-safe string
 
-@api_view(["GET"])
-def get_citizens(request, fields):
-    allowed_fields = {"name", "educational_qualification", "age", "gender"}  # Allowed columns
-    requested_fields = fields.split(",")  # Convert comma-separated string to a list
-    invalid_fields = set(requested_fields) - allowed_fields  # Check for invalid fields
+#     with connection.cursor() as cursor:
+#         cursor.execute(f"SELECT {fields_query} FROM citizen")  # Query only required fields
+#         results = cursor.fetchall()
 
-    if invalid_fields:
-        return Response({"error": f"Invalid fields: {', '.join(invalid_fields)}"}, status=400)
-
-    fields_query = ", ".join(requested_fields)  # Convert list back to SQL-safe string
-
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT {fields_query} FROM citizen")  # Query only required fields
-        results = cursor.fetchall()
-
-    data = [dict(zip(requested_fields, row)) for row in results]  # Convert result to JSON format
-    return Response(data)  # DRF handles the response
+#     data = [dict(zip(requested_fields, row)) for row in results]  # Convert result to JSON format
+#     return Response(data)  # DRF handles the response
 
 def add_citizen(request):
     if request.method == 'POST':
@@ -85,4 +62,31 @@ def citizen_list(request):
 
 def citizen_detail(request, citizen_id):
     citi = get_object_or_404(citizen, citizen_id=citizen_id)
-    return render(request, 'citizen_detail.html', {'citizen': citi})
+    return render(request, 'citizen/citizen_detail.html', {'citizen': citi})
+
+def cithome(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen/citizenhome.html', {'citizen': citi})
+
+def mycertificate(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen/certificate.html', {'citizen': citi})
+
+def mybenefits(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen/benefits.html', {'citizen': citi})
+
+def mytax(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen/tax.html', {'citizen': citi})
+
+def applycertificate(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen/apply_cert.html', {'citizen': citi})
+
+def applybenefits(request, citizen_id):
+    citi = get_object_or_404(citizen, citizen_id=citizen_id)
+    return render(request, 'citizen/apply_bene.html', {'citizen': citi})
+
+def logout(request):
+    return render(request, 'logout.html')

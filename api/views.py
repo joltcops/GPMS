@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .serializers import citizenSerializer
-from .models import citizen, household
+from .serializers import citizenSerializer, householdSerializer, welfare_schemesSerializer, land_recordsSerializer, assetsSerializer, vaccinationsSerializer, scheme_enrollmentsSerializer, census_dataSerializer, usersSerializer, panchayat_employeesSerializer
+from .models import citizen, household, welfare_schemes, land_records, assets, vaccinations, scheme_enrollments, census_data, users, panchayat_employees
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
@@ -24,6 +24,13 @@ def getcitizens(request):
     citizens=citizen.objects.all()
     CitizenSerializer=citizenSerializer(citizens, many=True)
     return Response(CitizenSerializer.data)
+
+@api_view(['GET'])
+def getschemes(request):
+    schemes=welfare_schemes.objects.all()
+    SchemeSerialiser=welfare_schemesSerializer(schemes, many=True)
+    return Response(SchemeSerialiser.data)
+
 
 @api_view(['POST'])
 def addcitizen(request):

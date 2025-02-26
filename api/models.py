@@ -1,8 +1,26 @@
 from django.db import models
 
+class users(models.Model):
+
+    ADMIN = 1
+    EMPLOYEE = 2
+    CITIZEN = 3
+    MONITOR = 4
+    ROLES=(
+        (ADMIN, 'ADMIN'),
+        (EMPLOYEE, 'EMPLOYEE'),
+        (CITIZEN, 'CITIZEN'),
+        (MONITOR, 'MONITOR')
+    )
+    user_id = models.CharField(max_length=511, primary_key=True)
+    role = models.PositiveSmallIntegerField(choices=ROLES, blank=True, null=True, default=0)
+    password_user = models.CharField(max_length=511)
+    
+
 class household(models.Model):
     household_id = models.CharField(max_length=511, primary_key=True)
     address = models.CharField(max_length=2047)
+    category = models.CharField(max_length=511)
     income = models.IntegerField()
 
     class Meta:
@@ -21,6 +39,7 @@ class citizen(models.Model):
     educational_qualification = models.CharField(max_length=511)
     household = models.ForeignKey(household, on_delete=models.CASCADE, db_column='household_id')
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='parent_id')
+    income = models.IntegerField()
 
     class Meta:
         db_table = 'citizen'
@@ -49,6 +68,7 @@ class panchayat_employees(models.Model):
     employee_id = models.CharField(max_length=511, primary_key=True)
     citizen_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
     role = models.CharField(max_length=511)
+    department = models.CharField(max_length=511)
 
     class Meta:
         db_table = 'panchayat_employees'

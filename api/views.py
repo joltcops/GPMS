@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import citizenSerializer
-from .models import citizen, household
+from .models import citizen, household, panchayat_employees, users
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
@@ -43,22 +43,29 @@ def add_citizen(request):
                 dob=form.cleaned_data['dob'],
                 educational_qualification=form.cleaned_data['educational_qualification'],
                 household=household_inst,
-                parent=parent_inst
+                parent=parent_inst,
+                income=form.cleaned_data['income'],
+            )
+            user = users(
+                user_id=form.cleaned_data['citizen_id'],
+                role=3,
+                password_user='123456',
             )
             print("Form is valid")
             print(form.cleaned_data)
+            user.save()
             citi.save()
-            return redirect('')  # Replace with your success page URL
+            form = CitizenForm()
     else:
         form = CitizenForm()
-    return render(request, 'addcitizen.html', {'form': form})
+    return render(request, 'employee/addcitizen.html', {'form': form})
 
 def home_page(request):
     return render(request, 'index.html')
 
 def citizen_list(request):
     citizens = citizen.objects.all()
-    return render(request, 'citizen_list.html', {'citizens': citizens})
+    return render(request, 'employee/citizen_list.html', {'citizens': citizens})
 
 def citizen_detail(request, citizen_id):
     citi = get_object_or_404(citizen, citizen_id=citizen_id)
@@ -90,3 +97,12 @@ def applybenefits(request, citizen_id):
 
 def logout(request):
     return render(request, 'logout.html')
+
+def emphome(request, emp_id):
+    emp = get_object_or_404(panchayat_employees, employee_id=emp_id)
+    return render(request, 'employee/emphome.html', {'emp': emp})
+
+def empdetail(request, emp_id):
+    emp = get_object_or_404(panchayat_employees, employee_id=emp_id)
+    print(emp.employee_id)
+    return render(request, 'employee/empdetail.html', {'emp': emp, 'cit': emp.citizen_id})

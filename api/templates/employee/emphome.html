@@ -1,0 +1,25 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome Page</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
+</head>
+<div class="topbar">
+    <div class="topbar-left">GPMS</div>
+    <div class="topbar-right">
+        <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+        <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+</div>
+<body>
+    <h1>Welcome {{ emp.name }}</h1>
+    
+    <ul>
+        <li><a href="{% url 'emp_detail' emp.employee_id %}">My Profile</a></li>
+        <li> <a href = "{% url 'add_citizen' %}"> Add Citizen </a></li>
+    </ul>
+</body>
+</html>

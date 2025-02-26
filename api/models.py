@@ -15,6 +15,10 @@ class users(models.Model):
     user_id = models.CharField(max_length=511, primary_key=True)
     role = models.PositiveSmallIntegerField(choices=ROLES, blank=True, null=True, default=0)
     password_user = models.CharField(max_length=511)
+
+    class Meta:
+        db_table = 'users'
+        managed=True
     
 
 class household(models.Model):

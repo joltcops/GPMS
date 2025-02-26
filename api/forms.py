@@ -8,3 +8,4 @@ class CitizenForm(forms.Form):
     educational_qualification = forms.CharField(max_length=511)
     household = forms.CharField(max_length=511)
     parent = forms.CharField(max_length=511)
+    income = forms.IntegerField()

@@ -1,11 +1,22 @@
+{%load static%}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
     <title>Certificates</title>
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'citizen_home' citizen.citizen_id %}">Home</a>
+            <a href="{% url 'citizen_detail' citizen.citizen_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
     <h1>My Certificates</h1>
     
     <a href="{% url 'apply_benefits' citizen.citizen_id %}" class="apply-button">Apply for New Benefit</a>

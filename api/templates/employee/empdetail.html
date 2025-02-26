@@ -1,0 +1,33 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/employee.css' %}">
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+    <h1>Profile</h1>
+    <div class = 'box'>
+    <p><strong>Name:</strong> {{ cit.name }}</p>
+    <p><strong>ID:</strong> {{ cit.citizen_id }}</p>
+    <p><strong>Role:</strong> {{ emp.role }} </p>
+    <p><strong>Department:</strong> {{ emp.department }}</p>
+    <p><strong>Educational Qualification:</strong> {{ cit.educational_qualification }}</p>
+    </div>
+    <div class = 'box'>
+    <p><strong>Gender:</strong> {{ cit.gender }}</p>
+    <p><strong>Date of Birth:</strong> {{ cit.dob }}</p>
+    <p><strong>Household:</strong> {{ cit.household }}</p>
+    <p><strong>Parent:</strong> {{ cit.parent }}</p>
+    </div>
+</body>
+</html>

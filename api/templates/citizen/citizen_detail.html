@@ -1,10 +1,22 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Profile</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/citizen.css' %}">
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'citizen_home' citizen.citizen_id %}">Home</a>
+            <a href="{% url 'citizen_detail' citizen.citizen_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
     <h1>Profile</h1>
+    <div class = 'box'>
     <p><strong>Name:</strong> {{ citizen.name }}</p>
     <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
     <p><strong>Gender:</strong> {{ citizen.gender }}</p>
@@ -12,6 +24,6 @@
     <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
     <p><strong>Household:</strong> {{ citizen.household }}</p>
     <p><strong>Parent:</strong> {{ citizen.parent }}</p>
-    
+    </div>
 </body>
 </html>

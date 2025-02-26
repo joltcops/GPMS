@@ -1,14 +1,16 @@
-html{
+html {
     font-family: 'Arial', sans-serif;
-    background-color: #333;
-    color:antiquewhite;
-}
-.topbar {
-    background-color: beige;
+    background-color: antiquewhite;
     color: #333;
+}
+
+.topbar {
+    background-color: #333;
+    color: antiquewhite;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px;
 }
 
 .topbar-left {
@@ -17,7 +19,7 @@ html{
 }
 
 .topbar-right a {
-    color: #333;
+    color: antiquewhite;
     text-decoration: none;
     margin-left: 20px;
     padding: 5px 10px;
@@ -25,47 +27,47 @@ html{
 }
 
 .topbar-right a:hover {
-    background-color:bisque;
+    background-color: #555;
 }
 
 ul {
-    list-style: none; 
+    list-style: none;
     padding: 0;
     margin: 0;
 }
 
 ul li {
     padding: 10px 15px;
-    background-color: #f4f4f4; 
+    background-color: #333;
     transition: background-color 0.3s, color 0.3s;
-    border-radius: 5px; 
-    margin: 5px 0; 
+    border-radius: 5px;
+    margin: 5px 0;
+    color: antiquewhite;
 }
 
 ul li:hover {
-    background-color:bisque;
+    background-color: #555;
     cursor: pointer;
 }
 
-ul li a:visited{
+ul li a {
     text-decoration: none;
-    color: #333;
+    color: antiquewhite;
 }
 
-ul li a{
+ul li a:visited {
     text-decoration: none;
-    color: #333;
+    color: antiquewhite;
 }
 
-ul li a:hover{
+ul li a:hover {
     text-decoration: none;
-    color: #333;
+    color: antiquewhite;
 }
 
-.box{
+.box {
     padding: 10px 40px;
-    background-color:beige;
-    color: black;
-    opacity: 0.7;
+    background-color: #333;
+    color: antiquewhite;
+    opacity: 0.9;
 }
-

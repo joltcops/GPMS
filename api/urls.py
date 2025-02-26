@@ -14,4 +14,6 @@ urlpatterns = [
     path('applycertificate/<str:citizen_id>/', views.applycertificate, name='apply_certificate'),
     path('applybenefits/<str:citizen_id>/', views.applybenefits, name='apply_benefits'),
     path('logout/', views.logout, name='logout'),
+    path('emphome/<str:emp_id>/', views.emphome, name='emp_home'),
+    path('empdetails/<str:emp_id>/', views.empdetail, name='emp_detail'),
 ]

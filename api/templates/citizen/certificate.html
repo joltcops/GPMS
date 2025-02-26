@@ -1,14 +1,38 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
     <title>Certificates</title>
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'citizen_home' citizen.citizen_id %}">Home</a>
+            <a href="{% url 'citizen_detail' citizen.citizen_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
     <h1>My Certificates</h1>
-    
-    <a href="{% url 'apply_certificate' citizen.citizen_id %}" class="apply-button">Apply for New Certificate</a>
-    
+
+    <!-- Dropdown form for selecting certificate type -->
+    <form action="{% url 'apply_certificate' citizen.citizen_id %}" method="POST">
+        {% csrf_token %}
+        <label for="certificate_type">To Apply for Certificates select type here:</label>
+        <select name="certificate_type" id="certificate_type" class="certificate-dropdown">
+            <option value="select">Select</option>
+            <option value="income_certificate">Income Certificate</option>
+            <option value="caste_certificate">Caste Certificate</option>
+            <option value="land_ownership_certificate">Land Ownership Certificate</option>
+            <option value="birth_certificate">Birth Certificate</option>
+        </select>
+        <button type="submit" class="apply-button">Apply</button>
+    </form>
+
 </body>
 </html>

@@ -8,6 +8,7 @@ from .models import panchayat_employees
 from .models import scheme_enrollments
 from .models import welfare_schemes
 from .models import census_data
+from .models import users
 
 admin.site.register(household)
 admin.site.register(citizen)
@@ -18,3 +19,4 @@ admin.site.register(panchayat_employees)
 admin.site.register(scheme_enrollments)
 admin.site.register(welfare_schemes)
 admin.site.register(census_data)
+admin.site.register(users)

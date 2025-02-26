@@ -9,6 +9,7 @@
 <div class="topbar">
     <div class="topbar-left">GPMS</div>
     <div class="topbar-right">
+        <a href="{% url 'citizen_home' citizen.citizen_id %}">Home</a>
         <a href="{% url 'citizen_detail' citizen.citizen_id %}">Profile</a>
         <a href="{% url 'logout' %}">Logout</a>
     </div>

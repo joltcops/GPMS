@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastructure Data</title>
+    {% load static %} 
+    <link rel="stylesheet" href="../static/styles/infrastructure_data.css">
+</head>
+<body>
+    <h1>Infrastructure Data</h1>
+    
+    {% if data %}
+        <table border="1">
+            <tr>
+                {% for key in data.0.keys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in data %}
+                <tr>
+                    {% for value in row.values %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No data found for the given year and location.</p>
+    {% endif %}
+    
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Household Members</title>
+</head>
+<body>
+    <h1>Household Members</h1>
+
+    {% if members %}
+        {% for member in members %}
+            <p><strong>Name:</strong> {{ member.name }}</p>
+            <p><strong>ID:</strong> {{ member.citizen_id }}</p>
+            <p><strong>Gender:</strong> {{ member.gender }}</p>
+            <p><strong>Date of Birth:</strong> {{ member.dob }}</p>
+            <p><strong>Educational Qualification:</strong> {{ member.educational_qualification }}</p>
+            <p><strong>Household:</strong> {{ member.household_id }}</p>
+            <p><strong>Parent:</strong> {{ member.parent }}</p>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>No household members found.</p>
+    {% endif %}
+
+</body>
+</html>

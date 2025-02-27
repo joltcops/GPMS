@@ -1,10 +1,20 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Infrastructure</title>
+    <title>Assets</title>
 </head>
 <body>
-    <h1>Infrastructure</h1>
+<h1>Asset Records</h1>
+    <ul>
+    {% for emp in asset_records %}
+        <li>
+            <p><strong>No of assets:</strong> {{ emp.0 }}</p>
+    <p><strong>Maximum budget:</strong> {{ emp.1 }}</p>
+    <p><strong>Average budget:</strong> {{ emp.2 }}</p>
+    <p><strong>Type:</strong> {{ emp.3 }}</p>
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'home' %}">Back to Home</a>
 </body>
 </html>

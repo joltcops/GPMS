@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +12,7 @@
     <!-- Topbar -->
     <div class="topbar">
 
-
+        
         <div class="topbar-left">GPMS</div>
         <div class="topbar-right">
             <a href="../">Home</a>
@@ -22,7 +23,7 @@
 
     <!-- Login Form -->
     <h1>Login</h1>
-    <form id="loginForm" method="post" action="{% url 'login_view' %}">
+    <form id="loginForm" method="post" action="{% url 'citizen_list' %}">
         {% csrf_token %}
 
         <!-- User ID Field -->
@@ -34,10 +35,10 @@
         <label for="role">Role:</label>
         <select id="role" name="role" required>
             <option value="" disabled selected>Select your role</option>
-            <option value="ADMIN">Admin</option>
-            <option value="EMPLOYEE">Employee</option>
-            <option value="CITIZEN">Citizen</option>
-            <option value="MONITOR">Monitor</option>
+            <option value="Admin">Admin</option>
+            <option value="Employee">Employee</option>
+            <option value="Citizen">Citizen</option>
+            <option value="Monitor">Monitor</option>
         </select>
         <br><br>
 

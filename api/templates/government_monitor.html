@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Government_Monitor</title>
+</head>
+<body>
+    <h1>Welcome to the Citizen Management System</h1>
+    <a href="{% url 'census_data_login' %}">
+        <button>View Census Details</button>
+    </a>
+    <a href="{% url 'environment_data_login' %}">
+        <button>View Environment Details</button>
+    </a>
+    <a href="{% url 'infrastructure_data_login' %}">
+        <button>View Infrastructal Details</button>
+    </a>
+    <a href="{% url 'agriculture_data_login' %}">
+        <button>View Agricultural Details</button>
+    </a>
+</body>
+</html>

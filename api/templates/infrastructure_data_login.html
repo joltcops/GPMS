@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +12,7 @@
     <!-- Topbar -->
     <div class="topbar">
 
-
+        
         <div class="topbar-left">GPMS</div>
         <div class="topbar-right">
             <a href="../">Home</a>
@@ -22,28 +23,17 @@
 
     <!-- Login Form -->
     <h1>Login</h1>
-    <form id="loginForm" method="post" action="{% url 'login_view' %}">
+    <form id="loginForm" method="post" action="{% url 'infrastructure_data_monitor' %}">
         {% csrf_token %}
 
         <!-- User ID Field -->
-        <label for="userid">User ID:</label>
-        <input type="text" id="userid" name="userid" placeholder="Enter your User ID" required>
-        <br><br>
-
-        <!-- Role Dropdown -->
-        <label for="role">Role:</label>
-        <select id="role" name="role" required>
-            <option value="" disabled selected>Select your role</option>
-            <option value="ADMIN">Admin</option>
-            <option value="EMPLOYEE">Employee</option>
-            <option value="CITIZEN">Citizen</option>
-            <option value="MONITOR">Monitor</option>
-        </select>
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" placeholder="Enter the location" required>
         <br><br>
 
         <!-- Password Field -->
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        <label for="year">Year of installation:</label>
+        <input type="text" id="year" name="year" placeholder="Enter the year" required>
         <br><br>
 
         <!-- Submit Button -->

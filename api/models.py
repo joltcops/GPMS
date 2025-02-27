@@ -17,13 +17,35 @@ class users(models.Model):
     password_user = models.CharField(max_length=511)
     
 
+class users(models.Model):
+
+    ADMIN = 1
+    EMPLOYEE = 2
+    CITIZEN = 3
+    MONITOR = 4
+    ROLES=(
+        (ADMIN, 'ADMIN'),
+        (EMPLOYEE, 'EMPLOYEE'),
+        (CITIZEN, 'CITIZEN'),
+        (MONITOR, 'MONITOR')
+    )
+    user_id = models.CharField(max_length=511, primary_key=True)
+    role = models.CharField(max_length=511)
+    password_user = models.CharField(max_length=511)
+    
+
 class household(models.Model):
     household_id = models.CharField(max_length=511, primary_key=True)
     address = models.CharField(max_length=2047)
     category = models.CharField(max_length=511)
+    category = models.CharField(max_length=511)
     income = models.IntegerField()
 
     class Meta:
+        db_table = 'household'
+        managed=True
+
+    def __str__(self):
         db_table = 'household'
         managed=True
 
@@ -99,6 +121,9 @@ class welfare_schemes(models.Model):
     description = models.TextField()
 
     class Meta:
+        db_table = 'welfare_schemes'
+        managed=True
+
         db_table = 'welfare_schemes'
         managed=True
 

@@ -33,6 +33,11 @@ def getschemes(request):
     return render(request, 'schemes.html', {'schemes': schemes})
 
 
+def getschemes(request):
+    schemes=welfare_schemes.objects.all()
+    return render(request, 'schemes.html', {'schemes': schemes})
+
+
 @api_view(['POST'])
 def addcitizen(request):
     data=request.data
@@ -287,4 +292,235 @@ def show_above_avg_env(request):
                     records = cursor.fetchall()
 
     return render(request, "show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records})
+
+
+
+def panchayat_details(request):
+    employee = panchayat_employees.objects.all()
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT name, role, department FROM citizen, panchayat_employees WHERE citizen.citizen_id=panchayat_employees.citizen_id")  # Query only required fields
+        results = cursor.fetchall()
+    #data = [dict(zip(row)) for row in results] 
+    return render(request, 'panchayat_details.html', {'employee': results})
+
+def environment_data(request):
+
+    return render(request, 'environment_data.html')
+
+def infrastructure_data(request):
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT COUNT(type), SUM(budget), AVG(budget),type FROM assets GROUP BY type")
+        results = cursor.fetchall()
+    return render(request, 'infrastructure_data.html', {'asset_records':results})
+
+def agriculture_data(request):
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT crop_type, SUM(area_acres) FROM land_records GROUP BY crop_type")
+        results = cursor.fetchall()
+    return render(request, 'agriculture_data.html', {'land_records':results})
+
+
+def login_page(request):
+    return render(request, 'login_page.html')
+
+def census_data_login(request):
+    return render(request, 'census_data_login.html')
+
+def environment_data_login(request):
+    return render(request, 'environment_data_login.html')
+
+def agriculture_data_login(request):
+    return render(request, 'agriculture_data_login.html')
+
+def infrastructure_data_login(request):
+    return render(request, 'infrastructure_data_login.html')
+
+def government_monitor(request):
+    return render(request, 'government_monitor.html')
+
+def census_data_func(request):
+    if request.method == "POST":
+        year = request.POST.get("year")
+        month = request.POST.get("month")
+        
+        if not year or not month:
+            return HttpResponse("Year and Month are required.")
+        
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                SELECT * FROM census_data
+                WHERE EXTRACT(YEAR FROM event_date) = %s
+                AND EXTRACT(MONTH FROM event_date) = %s;
+                """
+                cursor.execute(query, [year, month])
+                columns = [col[0] for col in cursor.description]
+                data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            
+            return render(request, "census_data.html", {"data": data})
+        except Exception as e:
+            return HttpResponse(f"Error fetching data: {e}")
+    
+    return HttpResponse("Invalid request method.")
+
+def login_view(request):
+    if request.method == "POST":
+        userid = request.POST.get("userid")
+        role = request.POST.get("role")
+        password = request.POST.get("password")
+        
+        if not userid or not role or not password:
+            return HttpResponse("All fields are required.")
+        
+        role_mapping = {"ADMIN": 1, "EMPLOYEE": 2, "CITIZEN": 3, "MONITOR": 4}
+        role_id = role_mapping.get(role)
+        
+        if role_id is None:
+            return HttpResponse("Invalid role.")
+        
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                SELECT * FROM users WHERE user_id = %s AND password_user = %s AND role = %s;
+                """
+                cursor.execute(query, [userid, password, role])
+                user = cursor.fetchone()
+                
+                if user:
+                    if role_id == 3:
+                        query = """
+                        SELECT * FROM citizen,users WHERE user_id = %s and citizen.citizen_id = users.user_id;
+                        """
+                        cursor.execute(query, [userid])
+                        columns = [col[0] for col in cursor.description]
+                        citizen_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                        return render(request, "citizen_detail.html", {"data": citizen_data})
+                    elif role_id == 4:
+                        return render(request, "government_monitor.html")
+                    else:
+                        return HttpResponse("Access denied for this role.")
+                else:
+                    return HttpResponse("Invalid credentials.")
+        except Exception as e:
+            return HttpResponse(f"Error during login: {e}")
+    
+    return HttpResponse("Invalid request method.")
+
+def infrastructure_data_monitor(request):
+    if request.method == "POST":
+        year = request.POST.get("year")
+        location = request.POST.get("location")
+        
+        if not year or not location:
+            return HttpResponse("Year and Location are required.")
+        
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                SELECT * FROM assets
+                WHERE EXTRACT(YEAR FROM installation_date) = %s
+                AND location = %s;
+                """
+                cursor.execute(query, [year, location])
+                columns = [col[0] for col in cursor.description]
+                data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            
+            return render(request, "infrastructure_data_monitor.html", {"data": data})
+        except Exception as e:
+            return HttpResponse(f"Error fetching data: {e}")
+    
+    return HttpResponse("Invalid request method.")
+
+def env_data_monitor(request):
+    if request.method == "POST":
+        year = request.POST.get("year")
+        month = request.POST.get("month")
+        
+        if not year or not month:
+            return HttpResponse("Year and Month are required.")
+        
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                SELECT * FROM env_data
+                WHERE EXTRACT(YEAR FROM date_of_record) = %s
+                AND EXTRACT(MONTH FROM date_of_record) = %s;
+                """
+                cursor.execute(query, [year, month])
+                columns = [col[0] for col in cursor.description]
+                data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            
+            return render(request, "env_data.html", {"data": data})
+        except Exception as e:
+            return HttpResponse(f"Error fetching data: {e}")
+
+    return HttpResponse("Invalid request method.")
+
+def members(request, household_id):
+    try:
+        with connection.cursor() as cursor:
+            query = """
+            SELECT * FROM citizen WHERE household_id = %s;
+            """
+            cursor.execute(query, [household_id])
+            columns = [col[0] for col in cursor.description]
+            members = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        return render(request, "members.html", {"members": members})
+    except Exception as e:
+        return HttpResponse(f"Error fetching household details: {e}")
+    
+def certificates(request, citizen_id):
+    return render(request, 'certificates.html', {"citizen_id": citizen_id})
+    
+def apply_certificate(request):
+    if request.method == "POST":
+        citizen_id = request.POST.get("citizen_id")
+        certificate_type = request.POST.get("certificate_type")
+
+        if not citizen_id or not certificate_type:
+            return HttpResponse("Citizen ID and Certificate Type are required.")
+
+        try:
+            last_application = certificate_application.objects.order_by('-application_id').first()
+
+            if last_application:
+                last_id = int(last_application.application_id[4:])  # Extract numeric part
+                new_id = f"CERT{last_id + 1}"
+            else:
+                new_id = "CERT001"  # Start numbering if no records exist
+
+            certificate = certificate_application(
+                application_id=new_id,
+                certificate_type=certificate_type,
+                status="PENDING",
+                applicant_id=citizen_id
+            )
+            certificate.save()
+
+            return HttpResponse("Certificate application submitted successfully.")
+        except Exception as e:
+            return HttpResponse(f"Error submitting application: {e}")
+
+    return HttpResponse("Invalid request method.")
+
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 

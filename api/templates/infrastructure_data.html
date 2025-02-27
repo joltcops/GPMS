@@ -8,13 +8,23 @@
     <ul>
     {% for emp in asset_records %}
         <li>
-            <p><strong>No of assets:</strong> {{ emp.0 }}</p>
-    <p><strong>Maximum budget:</strong> {{ emp.1 }}</p>
-    <p><strong>Average budget:</strong> {{ emp.2 }}</p>
-    <p><strong>Type:</strong> {{ emp.3 }}</p>
+            <p><strong>Total expenditure:</strong> {{ emp.0 }}</p>
+    <p><strong>Average expenditure:</strong> {{ emp.1 }}</p>
         </li>
     {% endfor %}
     </ul>
-    <a href="{% url 'home' %}">Back to Home</a>
+        <!-- Button to navigate to show_date_env page -->
+        <br>
+        <form action="{% url 'show_date_infra' %}" method="get">
+            <button type="submit">Show All Records Between Two Dates</button>
+        </form>
+
+        <br>
+        <form action="{% url 'show_loc_infra' %}" method="get">
+            <button type="submit">Show All Records By Filter</button>
+        </form>
+
+        <a href="{% url 'home' %}">Back to Home</a>
+    
 </body>
 </html>

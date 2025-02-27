@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Certificate</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles/form_styles.css' %}">
+</head>
+<body>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <h2>Apply for a Certificate</h2>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="applicant_id">Applicant ID:</label>
+        <input type="text" id="applicant_id" name="applicant_id" required>
+        <br><br>
+
+        <label for="certificate_type">Certificate Type:</label>
+        <select id="certificate_type" name="certificate_type" required>
+            <option value="" disabled selected>Select the type</option>
+            <option value="INCOME CERTIFICATE">Income Certificate</option>
+            <option value="CASTE CERTIFICATE">Caste Certificate</option>
+            <option value="BIRTH CERTIFICATE">Birth Certificate</option>
+            <option value="LAND OWNERSHIP CERTIFICATE">Land Ownership Certificate</option>
+        </select>
+        <br><br>
+
+        <button type="submit">Apply</button>
+    </form>
+
+</body>
+</html>

@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm
+from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CertificateForm
 from datetime import date
 from django.http import HttpResponse
 
@@ -73,6 +73,18 @@ def generate_new_application_id():
 
     return new_id
 
+def generate_new_certificate_id():
+    last_application = certificate_application.objects.order_by('-application_id').first()
+    
+    if last_application:
+        last_id = last_application.application_id  # Example: 'BR005'
+        last_num = int(last_id[3:])  # Extract numeric part -> 5
+        new_id = f"AP00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "AP001"  # If no records exist, start from 'BR001'
+
+    return new_id
+
 def add_citizen(request):
     if request.method == 'POST':
         form = CitizenForm(request.POST)
@@ -110,7 +122,7 @@ def add_benefit_application(request):
 
             # Replace citizen.objects.get(...) with raw SQL query
             with connection.cursor() as cursor:
-                cursor.execute("SELECT citizen_id FROM citizen WHERE citizen_id = %s", [citizen_id])
+                cursor.execute("SELECT * FROM citizen WHERE citizen_id = %s;", [citizen_id])
                 row = cursor.fetchone()
 
             if row is None:
@@ -129,7 +141,7 @@ def add_benefit_application(request):
             print("Form is valid")
             print(form.cleaned_data)
             new_app.save()
-            return redirect('')
+            return redirect('/api')
     else:
         form = BenefitForm()
     return render(request, 'apply_benefit.html', {'form': form})
@@ -305,15 +317,162 @@ def environment_data(request):
 
 def infrastructure_data(request):
     with connection.cursor() as cursor:
-        cursor.execute(f"SELECT COUNT(type), SUM(budget), AVG(budget),type FROM assets GROUP BY type")
+        cursor.execute(f"SELECT SUM(budget), AVG(budget) FROM assets;")
         results = cursor.fetchall()
     return render(request, 'infrastructure_data.html', {'asset_records':results})
+
+def show_date_infra(request):
+    form = InfraDateForm()
+    records=None
+    avg_budget = None
+    sum_budget = None
+
+    if request.method == 'POST':
+        form = InfraDateForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date=form.cleaned_data['end_date']
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM assets WHERE installation_date>=%s AND installation_date<=%s;", [start_date, end_date])
+                records = cursor.fetchall()
+
+            # Query to get the budget summary
+                cursor.execute("SELECT AVG(budget), SUM(budget) FROM assets WHERE installation_date>=%s AND installation_date<=%s;", [start_date, end_date])
+                summary = cursor.fetchone()
+
+                if summary:
+                    avg_budget = summary[0]  # Extract AVG(budget)
+                    sum_budget = summary[1]  # Extract SUM(budget)
+                
+    return render(request, "show_date_infra.html", {
+        "form": form, 
+        "records": records,
+        "avg_budget": avg_budget,
+        "sum_budget": sum_budget
+    })
+
+def show_loc_infra(request):
+    form = InfraLocForm()
+    records = None
+    avg_budget = None
+    sum_budget = None
+
+    if request.method == 'POST':
+        form = InfraLocForm(request.POST)
+        if form.is_valid():
+            location = form.cleaned_data['location']
+            type = form.cleaned_data['type']
+
+            with connection.cursor() as cursor:
+                # Query to fetch the filtered records
+                cursor.execute("""
+                    SELECT *
+                    FROM assets 
+                    WHERE location=%s AND type=%s;
+                """, [location, type])
+                records = cursor.fetchall()
+
+                # Query to get the budget summary
+                cursor.execute("""
+                    SELECT AVG(budget), SUM(budget) 
+                    FROM assets 
+                    WHERE location=%s AND type=%s;
+                """, [location, type])
+                summary = cursor.fetchone()
+
+                if summary:
+                    avg_budget = summary[0]  # Extract AVG(budget)
+                    sum_budget = summary[1]  # Extract SUM(budget)
+    
+    return render(request, "show_loc_infra.html", {
+        "form": form, 
+        "records": records,
+        "avg_budget": avg_budget,
+        "sum_budget": sum_budget
+    })
+
 
 def agriculture_data(request):
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT crop_type, SUM(area_acres) FROM land_records GROUP BY crop_type")
         results = cursor.fetchall()
     return render(request, 'agriculture_data.html', {'land_records':results})
+
+def show_income_agri(request):
+    form = AgriIncome()
+    records = None
+    avg_income = None
+    total_income = None
+
+    if request.method == 'POST':
+        form = AgriIncome(request.POST)
+        if form.is_valid():
+            crop_type = form.cleaned_data['crop_type']
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT name, income FROM citizen JOIN land_records ON land_records.citizen_id = citizen.citizen_id WHERE crop_type = %s;", [crop_type])
+                records = cursor.fetchall()
+
+                cursor.execute("SELECT AVG(income), SUM(income) FROM citizen JOIN land_records ON land_records.citizen_id = citizen.citizen_id WHERE crop_type = %s;", [crop_type])
+                summary = cursor.fetchone()
+
+                if summary:
+                    avg_income = summary[0]  # Extract AVG(budget)
+                    total_income = summary[1]  # Extract SUM(budget)
+
+    return render(request, "show_income_agri.html", {
+        "form": form, 
+        "records": records,
+        "avg_income": avg_income,
+        "total_income": total_income
+    })
+
+def show_edu_agri(request):
+    form = AgriIncome()
+    records = []
+
+    if request.method == 'POST':
+        form = AgriIncome(request.POST)
+        if form.is_valid():
+            crop_type = form.cleaned_data['crop_type']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT educational_qualification, COUNT(*) 
+                    FROM citizen 
+                    JOIN land_records ON land_records.citizen_id = citizen.citizen_id 
+                    WHERE land_records.crop_type = %s
+                    GROUP BY educational_qualification;
+                """, [crop_type])
+                
+                records = cursor.fetchall()
+
+    return render(request, "show_edu_agri.html", {
+        "form": form, 
+        "records": records,
+    })
+
+def show_area_agri(request):
+    form = AgriArea()
+    records = []
+
+    if request.method == 'POST':
+        form = AgriArea(request.POST)
+        if form.is_valid():
+            area = form.cleaned_data['area']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT name, area_acres FROM citizen JOIN land_records ON citizen.citizen_id = land_records.citizen_id WHERE area_acres>%s;
+                """, [area])
+                
+                records = cursor.fetchall()
+
+    return render(request, "show_area_agri.html", {
+        "form": form, 
+        "records": records,
+    })
 
 
 def login_page(request):
@@ -470,53 +629,37 @@ def certificates(request, citizen_id):
     return render(request, 'certificates.html', {"citizen_id": citizen_id})
     
 def apply_certificate(request):
-    if request.method == "POST":
-        citizen_id = request.POST.get("citizen_id")
-        certificate_type = request.POST.get("certificate_type")
+    if request.method == 'POST':
+        form = CertificateForm(request.POST)
+        if form.is_valid():
+            application_id = generate_new_certificate_id()
+            citizen_id = form.cleaned_data['applicant_id']
+            certificate_type = form.cleaned_data['certificate_type']
 
-        if not citizen_id or not certificate_type:
-            return HttpResponse("Citizen ID and Certificate Type are required.")
+            #scheme_id_inst = welfare_schemes.objects.get(scheme_id=scheme_id)
 
-        try:
-            last_application = certificate_application.objects.order_by('-application_id').first()
+            # Replace citizen.objects.get(...) with raw SQL query
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM citizen WHERE citizen_id = %s;", [citizen_id])
+                row = cursor.fetchone()
 
-            if last_application:
-                last_id = int(last_application.application_id[4:])  # Extract numeric part
-                new_id = f"CERT{last_id + 1}"
-            else:
-                new_id = "CERT001"  # Start numbering if no records exist
+            if row is None:
+                print("Citizen not found")
+                return render(request, 'apply_certificate.html', {'form': form, 'error': 'Citizen not found'})
 
-            certificate = certificate_application(
-                application_id=new_id,
-                certificate_type=certificate_type,
-                status="PENDING",
-                applicant_id=citizen_id
+            citizen_id_inst = row[0]  # Extract the citizen_id
+
+            new_app = certificate_application(
+                application_id=application_id,
+                certificate_type = certificate_type,
+                citizen_id_id=citizen_id_inst,
+                status='PENDING'
             )
-            certificate.save()
 
-            return HttpResponse("Certificate application submitted successfully.")
-        except Exception as e:
-            return HttpResponse(f"Error submitting application: {e}")
-
-    return HttpResponse("Invalid request method.")
-
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
+            print("Form is valid")
+            print(form.cleaned_data)
+            new_app.save()
+            return redirect('/api')
+    else:
+        form = CertificateForm()
+    return render(request, 'apply_certificate.html', {'form': form})

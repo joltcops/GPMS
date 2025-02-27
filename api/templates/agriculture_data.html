@@ -9,10 +9,29 @@
     {% for lands in land_records %}
         <li>
             <p><strong>Crop_type:</strong> {{ lands.0 }}</p>
-    <p><strong>Area:</strong> {{ lands.1 }}</p>
+            <p><strong>Area:</strong> {{ lands.1 }}</p>
         </li>
     {% endfor %}
     </ul>
+
+    <!-- Button to navigate to show_date_env page -->
+    <br>
+    <form action="{% url 'show_income_agri' %}" method="get">
+        <button type="submit">Show Incomes for a Crop Type</button>
+    </form>
+
+    <!-- Button to navigate to show_date_env page -->
+    <br>
+    <form action="{% url 'show_edu_agri' %}" method="get">
+        <button type="submit">Show Educational Qualifications for a Crop Type</button>
+    </form>
+
+    <!-- Button to navigate to show_date_env page -->
+    <br>
+    <form action="{% url 'show_area_agri' %}" method="get">
+        <button type="submit">Show Citizens with Land Area more than a Particular Value</button>
+    </form>
+
     <a href="{% url 'home' %}">Back to Home</a>
 </body>
 </html>

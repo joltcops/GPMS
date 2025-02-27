@@ -196,7 +196,7 @@ class certificate_application(models.Model):
     application_id = models.CharField(max_length=511, primary_key=True)
     certificate_type = models.CharField(max_length=511)
     status = models.CharField(max_length=511)
-    applicant_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
+    citizen_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
 
     class Meta:
         db_table = 'certificate_application'

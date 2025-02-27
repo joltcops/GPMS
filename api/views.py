@@ -263,7 +263,7 @@ def assetslist(request):
     asset = assets.objects.raw('SELECT * FROM assets')
     return render(request, 'employee/assets_list.html', {'assets': asset})
     
-def add_assets(request, citizen_id):
+def add_assets(request):
     if request.method == 'POST':
         form = AssetsForm(request.POST)
         if form.is_valid():
@@ -280,3 +280,34 @@ def add_assets(request, citizen_id):
     else:
         form = AssetsForm()
     return render(request, 'employee/addassets.html', {'form': form})
+
+@require_POST
+def delete_asset(request, asset_id):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM assets WHERE asset_id = %s", [asset_id])
+        return JsonResponse({'status': 'success'})
+    except vaccinations.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Asset record not found'}, status=404)
+    
+class AssetUpdateView(UpdateView):
+    model = assets
+    fields = [ 'type', 'location', 'installation_date', 'budget']
+    template_name = 'api/generic_form.html'
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        asset_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE assets
+                SET  type = %s, location = %s, 
+                    installation_date = %s, budget = %s 
+                WHERE asset_id = %s
+            ''', [data['type'], data['location'], data['installation_date'],
+                  data['budget'], asset_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return reverse('assetslist')

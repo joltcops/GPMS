@@ -11,9 +11,31 @@
         <li>
                 (ID: {{ assetitem.asset_id }}) (Type: {{ assetitem.type }}) (Location: {{ assetitem.location }}) (Installation Date: {{ assetitem.installation_date }}) (Budget: {{ assetitem.budget }})
             </a>
+            <a href="{% url 'asset_edit' assetitem.asset_id %}" class="btn btn-warning">Edit</a>
+            <button onclick="confirmDelete('{{ assetitem.asset_id }}')">Delete</button>
         </li>
     {% endfor %}
     </ul>
 </body>
 </html>
-
+<script>
+    function confirmDelete(asset_id) {
+        if (confirm(`Are you sure you want to delete ${asset_id}?`)) {
+            fetch(`/api/delete-asset/${asset_id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`asset-${asset_id}`).remove();
+                } else {
+                    
+                }
+            });
+        }
+    }
+    </script>

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include  # Import include
 from . import views
-from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUpdateView,UserUpdateView
+from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUpdateView,UserUpdateView, AssetUpdateView
 
 urlpatterns = [
     path('', views.home_page, name = 'home'),
@@ -29,5 +29,7 @@ urlpatterns = [
     path('delete-land/<str:land_id>/', views.delete_land, name='delete_land'),
     path('delete-vaccine/<str:vaccination_id>/', views.delete_vaccine, name='delete_vaccine'),
     path('delete-citizen/<str:citizen_id>/', views.delete_citizen, name='delete_citizen'),
+    path('delete-asset/<str:asset_id>/', views.delete_asset, name='delete_asset'),
+    path('asset/edit/<str:pk>/', AssetUpdateView.as_view(), name='asset_edit'),
 
 ]

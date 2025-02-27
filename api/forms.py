@@ -26,3 +26,15 @@ class AssetsForm(forms.Form):
     location = forms.CharField(max_length=511)
     installation_date = forms.DateField()
     budget = forms.IntegerField()
+
+class CensusForm(forms.Form):
+    census_id = forms.CharField(max_length=511)
+    household_id = forms.CharField(max_length=511)
+    citizen_id = forms.CharField(max_length=511)
+    event_type = forms.CharField(max_length=511)
+    event_date = forms.DateField()
+
+class WelfareForm(forms.Form):
+    scheme_id = forms.CharField(max_length=511)
+    name = forms.CharField(max_length=511)
+    description = forms.CharField(max_length=511)

@@ -2,13 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import citizenSerializer
-from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax
+from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, census_data
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -43,6 +43,24 @@ def add_citizen(request):
     else:
         form = CitizenForm()
     return render(request, 'employee/addcitizen.html', {'form': form})
+
+def add_census_data(request):
+    if request.method == 'POST':
+        form = CensusForm(request.POST)
+        if form.is_valid():
+            census_id = form.cleaned_data['census_id']
+            event_type = form.cleaned_data['event_type']
+            event_date = form.cleaned_data['event_date']
+            household_id = form.cleaned_data['household_id']
+            citizen_id = form.cleaned_data['citizen_id']
+
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO census_data(census_id, household_id, citizen_id, event_type, event_date) VALUES (%s, %s, %s, %s, %s)", [census_id, household_id, citizen_id, event_type, event_date])
+            form = CensusForm()
+    else:
+        form = CensusForm()
+    return render(request, 'employee/addcensusdata.html', {'form': form})
 
 def home_page(request):
     return render(request, 'index.html')
@@ -196,6 +214,46 @@ class UserUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('emp_citizen_detail', kwargs={'citizen_id': self.object.user_id})
 
+class SchemeUpdateView(UpdateView):
+    model = welfare_schemes
+    fields = ['name', 'description']
+    template_name = 'api/generic_form.html'
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        scheme_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE welfare_schemes
+                SET name = %s, description = %s
+                WHERE scheme_id = %s
+            ''', [data['name'], data['description'], scheme_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('welfare_schemes_list')
+    
+class CenUpdateView(UpdateView):
+    model = census_data
+    fields = ['event_type', 'event_date']
+    template_name = 'api/generic_form.html'
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        cen_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE census_data
+                SET event_type = %s, event_date = %s
+                WHERE census_id = %s
+            ''', [data['event_type'], data['event_date'], cen_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('census_data_list')
+
     
 def add_land(request, citizen_id):
     if request.method == 'POST':
@@ -265,7 +323,7 @@ def assetslist(request):
     
 def add_assets(request):
     if request.method == 'POST':
-        form = AssetsForm(request.POST)
+        form = CensusForm(request.POST)
         if form.is_valid():
             asset_id = form.cleaned_data['asset_id']
             type = form.cleaned_data['type']
@@ -276,10 +334,27 @@ def add_assets(request):
             print(form.cleaned_data)
             cursor = connection.cursor()
             cursor.execute("INSERT INTO assets (asset_id, type, location, installation_date, budget) VALUES (%s, %s, %s, %s, %s)", [asset_id, type, location, installation_date, budget])
-            form = AssetsForm()
+            form = CensusForm()
     else:
-        form = AssetsForm()
+        form = CensusForm()
     return render(request, 'employee/addassets.html', {'form': form})
+
+def add_welfare_schemes(request):
+    if request.method == 'POST':
+        form = WelfareForm(request.POST)
+        if form.is_valid():
+            scheme_id = form.cleaned_data['scheme_id']
+            name = form.cleaned_data['name']
+            description = form.cleaned_data['description']
+            print("Form is valid")
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO welfare_schemes (scheme_id, name, description) VALUES (%s, %s, %s)", [scheme_id, name, description])
+            form = WelfareForm()
+    else:
+        form = WelfareForm()
+    return render(request, 'employee/addwelfareschemes.html', {'form': form})
+
 
 @require_POST
 def delete_asset(request, asset_id):
@@ -289,6 +364,23 @@ def delete_asset(request, asset_id):
         return JsonResponse({'status': 'success'})
     except vaccinations.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Asset record not found'}, status=404)
+    
+@require_POST
+def delete_scheme(request, scheme_id):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM welfare_schemes WHERE scheme_id = %s", [scheme_id])
+        return JsonResponse({'status': 'success'})
+    except welfare_schemes.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Welfare scheme not found'}, status=404)
+@require_POST
+def delete_cen(request, cen_id):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM census_data WHERE census_id = %s", [cen_id])
+        return JsonResponse({'status': 'success'})
+    except census_data.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Census data not found'}, status=404)
     
 class AssetUpdateView(UpdateView):
     model = assets
@@ -311,3 +403,11 @@ class AssetUpdateView(UpdateView):
     
     def get_success_url(self):
         return reverse('assetslist')
+
+def census_data_list(request):
+    census = census_data.objects.raw('SELECT * FROM census_data')
+    return render(request, 'employee/census_data_list.html', {'census_data': census})
+
+def welfare_schemes_list(request):
+    schemes = welfare_schemes.objects.raw('SELECT * FROM welfare_schemes')
+    return render(request, 'employee/welfare_schemes_list.html', {'schemes': schemes})

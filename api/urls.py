@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include  # Import include
 from . import views
-from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUpdateView,UserUpdateView, AssetUpdateView
+from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUpdateView,UserUpdateView, AssetUpdateView,SchemeUpdateView,CenUpdateView
 
 urlpatterns = [
     path('', views.home_page, name = 'home'),
@@ -23,6 +23,7 @@ urlpatterns = [
     path('land/edit/<str:pk>/', LandUpdateView.as_view(), name='land_edit'),
     path('addland/<str:citizen_id>/', views.add_land, name='add_land'),
     path('addassets/',views.add_assets,name='add_assets'),
+    path('addwelfareschemes/',views.add_welfare_schemes,name='add_welfare_schemes'),
     path('user/edit/<str:pk>/', UserUpdateView.as_view(), name='user_edit'),
     path('addvaccine/<str:citizen_id>/', views.add_vaccine, name='add_vaccine'),
     path('assets_list/', views.assetslist, name='assetslist'),
@@ -30,6 +31,12 @@ urlpatterns = [
     path('delete-vaccine/<str:vaccination_id>/', views.delete_vaccine, name='delete_vaccine'),
     path('delete-citizen/<str:citizen_id>/', views.delete_citizen, name='delete_citizen'),
     path('delete-asset/<str:asset_id>/', views.delete_asset, name='delete_asset'),
+    path('delete-scheme/<str:scheme_id>/', views.delete_scheme, name='delete_scheme'),
+    path('delete-cen/<str:cen_id>/', views.delete_cen, name='delete_cen'),
     path('asset/edit/<str:pk>/', AssetUpdateView.as_view(), name='asset_edit'),
-
+    path('scheme/edit/<str:pk>/', SchemeUpdateView.as_view(), name='scheme_edit'),
+    path('cen/edit/<str:pk>/', CenUpdateView.as_view(), name='cen_edit'),
+    path('census_data_list/', views.census_data_list, name='census_data_list'),
+    path('welfare_schemes/', views.welfare_schemes_list, name='welfare_schemes_list'),
+    path('addcensusdata/', views.add_census_data, name='add_census_data'),
 ]

@@ -128,6 +128,24 @@
     </div>
 
 </div>
+
+<!--Tax details-->
+
+<div class="card mb-4">
+  <div class="card-header">
+    <h2>Tax Details</h2>
+    <a href="{% url 'add_tax' citizen.citizen_id %}">Add</a>
+  </div>
+  <div class="card-body">
+    <ul>
+      {% for tax in taxes %}
+      <li>Tax ID: {{ tax.0 }} Type: {{ tax.2 }} Amount: {{ tax.3 }} Date: {{ tax.4 }} Status: {{ tax.5 }}
+        </li>
+        {% endfor %}
+    </ul>
+    </div>
+    </div>
+
 </body>
 </html>
 

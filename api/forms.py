@@ -26,3 +26,26 @@ class AssetsForm(forms.Form):
     location = forms.CharField(max_length=511)
     installation_date = forms.DateField()
     budget = forms.IntegerField()
+
+class TaxForm(forms.Form):
+    tax_id = forms.CharField(max_length=511)
+    type = forms.CharField(max_length=511)
+    amount = forms.IntegerField()
+    due_date = forms.DateField()
+    paid_status = forms.CharField(max_length=511)
+
+class EnvForm(forms.Form):
+    record_id = forms.CharField(max_length=511)
+    rainfall = forms.IntegerField()
+    aqi = forms.IntegerField()
+    gwl = forms.IntegerField()
+    date_of_record = forms.DateField()
+    temperature = forms.IntegerField()
+    humidity = forms.IntegerField()
+    wind_speed = forms.IntegerField()
+
+class HouseForm(forms.Form):
+    household_id = forms.CharField(max_length=511)
+    address = forms.CharField(max_length=2047)
+    category = forms.CharField(max_length=511)
+    income = forms.IntegerField()

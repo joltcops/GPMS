@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Pending Certificate Applications</h2>
+
+    {% if applications %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Applicant ID</th>
+                    <th>Certificate Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in applications %}
+                    <tr>
+                        <td>{{ application.application_id }}</td>
+                        <td>{{ application.applicant_id }}</td>
+                        <td>{{ application.certificate_type }}</td>
+                        <td>
+                            <form method="post" action="{% url 'approve_certificate' application.application_id employee_id %}">
+                                {% csrf_token %}
+                                <button type="submit">APPROVE</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No pending certificate applications.</p>
+    {% endif %}
+{% endblock %}

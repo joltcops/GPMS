@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welfare Schemes</title>
+</head>
+<body>
+<h1>Schemes List</h1>
+    <ul>
+    {% for scheme in schemes %}
+        <li>
+            <p><strong>Name:</strong> {{ scheme.name }}</p>
+    <p><strong>Description:</strong> {{ scheme.description }}</p>
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'home' %}">Back to Home</a>
+</body>
+</html>

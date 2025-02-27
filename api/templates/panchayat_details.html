@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panchayat Employees</title>
+</head>
+<body>
+<h1>Employee List</h1>
+    <ul>
+    {% for emp in employee %}
+        <li>
+            <p><strong>Name:</strong> {{ emp.0 }}</p>
+    <p><strong>Role:</strong> {{ emp.1 }}</p>
+    <p><strong>Department:</strong> {{ emp.2 }}</p>
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'home' %}">Back to Home</a>
+</body>
+</html>

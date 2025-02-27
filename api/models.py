@@ -13,7 +13,7 @@ class users(models.Model):
         (MONITOR, 'MONITOR')
     )
     user_id = models.CharField(max_length=511, primary_key=True)
-    role = models.PositiveSmallIntegerField(choices=ROLES, blank=True, null=True, default=0)
+    role = models.CharField(max_length=511)
     password_user = models.CharField(max_length=511)
 
     class Meta:

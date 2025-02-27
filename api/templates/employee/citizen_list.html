@@ -8,7 +8,7 @@
     <ul>
     {% for citizen in citizens %}
         <li>
-            <a href="{% url 'citizen_detail' citizen.citizen_id %}">
+            <a href="{% url 'emp_citizen_detail' citizen.citizen_id %}">
                 {{ citizen.name }} (ID: {{ citizen.citizen_id }})
             </a>
         </li>

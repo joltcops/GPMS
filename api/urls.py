@@ -22,8 +22,12 @@ urlpatterns = [
     path('household/edit/<str:pk>/', HouseholdUpdateView.as_view(), name='household_edit'),
     path('land/edit/<str:pk>/', LandUpdateView.as_view(), name='land_edit'),
     path('addland/<str:citizen_id>/', views.add_land, name='add_land'),
+    path('addassets/',views.add_assets,name='add_assets'),
     path('user/edit/<str:pk>/', UserUpdateView.as_view(), name='user_edit'),
     path('addvaccine/<str:citizen_id>/', views.add_vaccine, name='add_vaccine'),
+    path('assets_list/', views.assetslist, name='assetslist'),
     path('delete-land/<str:land_id>/', views.delete_land, name='delete_land'),
     path('delete-vaccine/<str:vaccination_id>/', views.delete_vaccine, name='delete_vaccine'),
+    path('delete-citizen/<str:citizen_id>/', views.delete_citizen, name='delete_citizen'),
+
 ]

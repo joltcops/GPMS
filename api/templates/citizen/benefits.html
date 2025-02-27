@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
-    <title>Certificates</title>
+    <title>Benefits</title>
 </head>
 <body>
     <div class="topbar">
@@ -17,7 +17,17 @@
             <a href="{% url 'logout' %}">Logout</a>
         </div>
     </div>
-    <h1>My Certificates</h1>
+    <h1>My Benefits</h1>
+
+    <div>
+        {% for scheme in schemes %}
+            <div class="certificate-box">
+                <p><strong>Enrollment ID:</strong> {{ scheme.enrollment_id }}</p>
+                <p><strong>Scheme:</strong> {{ scheme.scheme_id }}</p>
+                <p><strong>Enrollment Date:</strong> {{ scheme.enrollment_date }}</p>
+            </div>
+        {% endfor %}
+    </div>
     
     <a href="{% url 'apply_benefits' citizen.citizen_id %}" class="apply-button">Apply for New Benefit</a>
     

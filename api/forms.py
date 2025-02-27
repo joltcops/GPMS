@@ -19,3 +19,10 @@ class VaccineForm(forms.Form):
     vaccination_id = forms.CharField(max_length=511)
     vaccine_type = forms.CharField(max_length=511)
     date_administered = forms.DateField()
+
+class AssetsForm(forms.Form):
+    asset_id = forms.CharField(max_length=511)
+    type = forms.CharField(max_length=511)
+    location = forms.CharField(max_length=511)
+    installation_date = forms.DateField()
+    budget = forms.IntegerField()

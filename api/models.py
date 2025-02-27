@@ -18,7 +18,7 @@ class users(models.Model):
 
     class Meta:
         db_table = 'users'
-        managed=True
+        managed = True
     
 
 class household(models.Model):
@@ -41,8 +41,8 @@ class citizen(models.Model):
     gender = models.CharField(max_length=15)
     dob = models.DateField()
     educational_qualification = models.CharField(max_length=511)
-    household = models.ForeignKey(household, on_delete=models.CASCADE, db_column='household_id')
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='parent_id')
+    household_id = models.ForeignKey(household, on_delete=models.CASCADE, db_column='household_id')
+    parent_id = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='parent_id')
     income = models.IntegerField()
 
     class Meta:
@@ -54,7 +54,7 @@ class citizen(models.Model):
 
 
 class land_records(models.Model):
-    land_id = models.CharField(max_length=511, primary_key=True)  # Explicit primary key
+    land_id = models.CharField(max_length=511, primary_key=True) 
     citizen_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
     area_acres = models.IntegerField()
     crop_type = models.CharField(max_length=511)
@@ -87,6 +87,7 @@ class assets(models.Model):
     type = models.CharField(max_length=511)
     location = models.CharField(max_length=2047)
     installation_date = models.DateField()
+    budget=models.IntegerField()
 
     class Meta:
         db_table = 'assets'
@@ -153,3 +154,106 @@ class census_data(models.Model):
 
     def __str__(self):
         return self.event_type
+    
+class certificate_application(models.Model):
+    INCOME_CERTIFICATE = 1
+    CASTE_CERTIFICATE = 2
+    LAND_OWNERSHIP_CERTIFICATE = 3
+    BIRTH_CERTIFICATE = 4
+    CERTIFICATES = (
+        (INCOME_CERTIFICATE, 'INCOME CERTIFICATE'),
+        (CASTE_CERTIFICATE, 'CASTE CERTIFICATE'),
+        (LAND_OWNERSHIP_CERTIFICATE, 'LAND OWNERSHIP CERTIFICATE'),
+        (BIRTH_CERTIFICATE, 'BIRTH CERTIFICATE')
+    )
+    PENDING = 5
+    APPROVED = 6
+    STATUS = (
+        (PENDING, 'PENDING'),
+        (APPROVED, 'APPROVED')
+    )
+    application_id = models.CharField(max_length=511, primary_key=True)
+    certificate_type = models.CharField(max_length=511)
+    status = models.CharField(max_length=511)
+    applicant_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
+
+    class Meta:
+        db_table = 'certificate_application'
+        #unique_together = ('household_id', 'citizen_id', 'event_type')
+        managed=True
+
+    def __str__(self):
+        return self.application_id
+
+class certificate(models.Model):
+    certificate_id = models.CharField(max_length=511, primary_key=True)
+    certificate_type = models.CharField(max_length=511)
+    applicant_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
+    issue_date = models.DateField()
+    issuing_official = models.ForeignKey(panchayat_employees, on_delete=models.CASCADE, db_column='employee_id')
+
+    class Meta:
+        db_table = 'certificate'
+        managed = True
+
+    def __str__(self):
+        return self.certificate_type
+
+class tax(models.Model):
+    TAX_TYPES = [
+        ('PROPERTY', 'Property'),
+        ('WATER', 'Water'),
+    ]
+    PAID_STATUS = [
+        ('PAID', 'Paid'),
+        ('DUE', 'Due'),
+    ]
+    
+    tax_id = models.CharField(max_length=511, primary_key=True)
+    payer_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
+    type = models.CharField(max_length=511)
+    amount = models.IntegerField()
+    due_date = models.DateField()
+    paid_status = models.CharField(max_length=511, choices=PAID_STATUS)
+
+    class Meta:
+        db_table = 'tax'
+        managed = True
+
+    def __str__(self):
+        return self.type
+
+class benefit_application(models.Model):
+    APPLICATION_STATUS = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+    ]
+    
+    application_id = models.CharField(max_length=511, primary_key=True)
+    citizen_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
+    scheme_id = models.ForeignKey(welfare_schemes, on_delete=models.CASCADE, db_column='scheme_id')
+    status = models.CharField(max_length=511)
+
+    class Meta:
+        db_table = 'benefit_application'
+        managed = True
+
+    def __str__(self):
+        return self.application_id
+
+class env_data(models.Model):
+    record_id = models.CharField(max_length=511, primary_key=True)
+    rainfall = models.IntegerField()
+    aqi = models.IntegerField()
+    gwl = models.IntegerField()
+    date_of_record = models.DateField()
+    temperature = models.IntegerField()
+    humidity = models.IntegerField()
+    wind_speed = models.IntegerField()
+
+    class Meta:
+        db_table = 'env_data'
+        managed = True
+
+    def __str__(self):
+        return self.record_id

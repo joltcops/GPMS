@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assets List</title>
+</head>
+<body>
+    <h1>Assets List</h1>
+    <a href="{% url 'add_assets' %}">Add</a>
+    <ul>
+    {% for assetitem in assets %}
+        <li>
+                (ID: {{ assetitem.asset_id }}) (Type: {{ assetitem.type }}) (Location: {{ assetitem.location }}) (Installation Date: {{ assetitem.installation_date }}) (Budget: {{ assetitem.budget }})
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
+

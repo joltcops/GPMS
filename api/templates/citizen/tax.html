@@ -7,6 +7,16 @@
 </head>
 <body>
     <h1>My Tax Payments</h1>
-    
+    <div>
+        {% for tax in taxes %}
+            <div class="certificate-box">
+                <p><strong>Tax ID:</strong> {{ tax.0 }}</p>
+                <p><strong>Tax Type:</strong> {{ tax.2 }}</p>
+                <p><strong>Amount:</strong> {{ tax.3 }}</p>
+                <p><strong>Due Date:</strong> {{ tax.4 }}</p>
+                <p><strong>Status:</strong> {{ tax.5 }}</p>
+            </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

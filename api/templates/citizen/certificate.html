@@ -20,6 +20,17 @@
 
     <h1>My Certificates</h1>
 
+    <div>
+        {% for certificate in certificates %}
+            <div class="certificate-box">
+                <p><strong>Certificate ID:</strong> {{ certificate.0 }}</p>
+                <p><strong>Certificate Type:</strong> {{ certificate.1 }}</p>
+                <p><strong>Issued Date:</strong> {{ certificate.3 }}</p>
+                <p><strong>Issued By:</strong> {{ certificate.4 }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
     <!-- Dropdown form for selecting certificate type -->
     <form action="{% url 'apply_certificate' citizen.citizen_id %}" method="POST">
         {% csrf_token %}

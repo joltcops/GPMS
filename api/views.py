@@ -10,6 +10,8 @@ from django.http import JsonResponse
 from django.db import connection
 from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm
 from datetime import date
+from django.http import HttpResponse
+
 
 count_benefit=3
 
@@ -31,12 +33,6 @@ def getcitizens(request):
 def getschemes(request):
     schemes=welfare_schemes.objects.all()
     return render(request, 'schemes.html', {'schemes': schemes})
-
-
-def getschemes(request):
-    schemes=welfare_schemes.objects.all()
-    return render(request, 'schemes.html', {'schemes': schemes})
-
 
 @api_view(['POST'])
 def addcitizen(request):
@@ -186,14 +182,14 @@ def panchayat_details(request):
 def environment_data(request):
     return render(request, 'environment_data.html')
 
-def infrastructure_data(request):
-    return render(request, 'infrastructure_data.html')
+# def infrastructure_data(request):
+#     return render(request, 'infrastructure_data.html')
 
-def agriculture_data(request):
-    return render(request, 'agriculture_data.html')
+# def agriculture_data(request):
+#     return render(request, 'agriculture_data.html')
 
-def login_page(request):
-    return render(request, 'login_page.html')
+# def login_page(request):
+#     return render(request, 'login_page.html')
 
 def show_general_env(request):
     with connection.cursor() as cursor:
@@ -295,13 +291,13 @@ def show_above_avg_env(request):
 
 
 
-def panchayat_details(request):
-    employee = panchayat_employees.objects.all()
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT name, role, department FROM citizen, panchayat_employees WHERE citizen.citizen_id=panchayat_employees.citizen_id")  # Query only required fields
-        results = cursor.fetchall()
-    #data = [dict(zip(row)) for row in results] 
-    return render(request, 'panchayat_details.html', {'employee': results})
+# def panchayat_details(request):
+#     employee = panchayat_employees.objects.all()
+#     with connection.cursor() as cursor:
+#         cursor.execute(f"SELECT name, role, department FROM citizen, panchayat_employees WHERE citizen.citizen_id=panchayat_employees.citizen_id")  # Query only required fields
+#         results = cursor.fetchall()
+#     #data = [dict(zip(row)) for row in results] 
+#     return render(request, 'panchayat_details.html', {'employee': results})
 
 def environment_data(request):
 

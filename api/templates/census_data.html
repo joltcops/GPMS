@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Census Data</title>
+    <link rel="stylesheet" href="../static/styles/census_data.css">
+</head>
+<body>
+    <h1>Census Data for Selected Year and Month</h1>
+
+    {% if data %}
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for key in data.0.keys %}
+                        <th>{{ key }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                    <tr>
+                        {% for value in row.values %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No data available for the selected year and month.</p>
+    {% endif %}
+
+    <br>
+</body>
+</html>

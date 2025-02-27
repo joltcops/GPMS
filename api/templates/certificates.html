@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    {% load static %} 
+    <link rel="stylesheet" href="../static/styles/login_page.css">
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+
+
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="../">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <h1>Login</h1>
+    <form id="loginForm" method="post" action="{% url 'apply_certificate' %}?citizen_id={{ citizen_id }}">
+        {% csrf_token %}
+        
+        <input type="hidden" name="citizen_id" value="{{ citizen_id }}">
+    
+        <label for="certificate_type">Certificate Type:</label>
+        <select id="certificate_type" name="certificate_type" required>
+            <option value="" disabled selected>Select the type</option>
+            <option value="income">Income Certificate</option>
+            <option value="cast">Cast Certificate</option>
+            <option value="birth">Birth Certificate</option>
+            <option value="land_ownership">Land ownership certificate</option>
+        </select>
+        <br><br>
+    
+        <button type="submit">Apply</button>
+    </form>
+    
+</body>
+</html>
+

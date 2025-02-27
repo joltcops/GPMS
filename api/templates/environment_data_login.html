@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    {% load static %} 
+    <link rel="stylesheet" href="../static/styles/login_page.css">
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+
+        
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="../">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <h1>Login</h1>
+    <form id="loginForm" method="post" action="{% url 'env_data_monitor' %}">
+        {% csrf_token %}
+
+        <!-- User ID Field -->
+        <label for="YEAR">YEAR:</label>
+        <input type="text" id="year" name="year" placeholder="Enter the year" required>
+        <br><br>
+
+        <!-- Password Field -->
+        <label for="MONTH">MONTH:</label>
+        <input type="text" id="month" name="month" placeholder="Enter the month" required>
+        <br><br>
+
+        <!-- Submit Button -->
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

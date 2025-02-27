@@ -5,8 +5,20 @@
 </head>
 <body>
     <h1>Welcome to the Citizen Management System</h1>
-    <a href="{% url 'add_citizen' %}">
-        <button>Add Citizen</button>
+    <a href="{% url 'login_page' %}">
+        <button>Login</button>
+    </a>
+    <a href="{% url 'panchayat_details' %}">
+        <button>View Panchayat Details</button>
+    </a>
+    <a href="{% url 'environment_data' %}">
+        <button>View Environment Details</button>
+    </a>
+    <a href="{% url 'infrastructure_data' %}">
+        <button>View Infrastructal Details</button>
+    </a>
+    <a href="{% url 'agriculture_data' %}">
+        <button>View Agricultural Details</button>
     </a>
 </body>
 </html>

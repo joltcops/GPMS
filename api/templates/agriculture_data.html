@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agriculture</title>
+</head>
+<body>
+<h1>Land records</h1>
+    <ul>
+    {% for lands in land_records %}
+        <li>
+            <p><strong>Crop_type:</strong> {{ lands.0 }}</p>
+    <p><strong>Area:</strong> {{ lands.1 }}</p>
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'home' %}">Back to Home</a>
+</body>
+</html>

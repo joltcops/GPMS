@@ -19,4 +19,8 @@ urlpatterns = [
     path('agriculture_data/',views.agriculture_data,name='agriculture_data'),
     path('login_page/',views.login_page,name='login_page'),
     path('approve_certificate/<int:application_id>/<int:employee_id>/', views.approve_certificate, name='approve_certificate'),
+    path('general_env/', views.show_general_env, name = 'general_env'),
+    path('show_date_env/', views.show_date_env, name = 'show_date_env'),
+    path('show_val_env/', views.show_val_env, name = 'show_val_env'),
+    path('show_above_avg_env/', views.show_above_avg_env, name = 'show_above_avg_env'),
 ]

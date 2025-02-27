@@ -12,3 +12,14 @@ class CitizenForm(forms.Form):
 class BenefitForm(forms.Form):
     scheme_id = forms.CharField(max_length=511)
     citizen_id = forms.CharField(max_length=511)
+
+class EnvDateForm(forms.Form):
+    start_date = forms.DateField()
+    end_date = forms.DateField()
+
+class EnvValueForm(forms.Form):
+    temperature = forms.IntegerField()
+    air_quality_index = forms.IntegerField()
+    ground_water_level = forms.IntegerField()
+    humidity = forms.IntegerField()
+    rainfall = forms.IntegerField()

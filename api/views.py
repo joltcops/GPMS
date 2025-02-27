@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, BenefitForm
+from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm
 from datetime import date
 
 count_benefit=3
@@ -189,3 +189,102 @@ def agriculture_data(request):
 
 def login_page(request):
     return render(request, 'login_page.html')
+
+def show_general_env(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature), 
+                   AVG(humidity), AVG(wind_speed) 
+            FROM env_data;
+        """)
+        result = cursor.fetchone()  # Fetch a single row
+
+    # Check if result is None (in case the table is empty)
+    if result is None or all(v is None for v in result):
+        return render(request, "show_general_env.html", {"error": "No data available"})
+
+    # Convert the tuple to a dictionary
+    data = {
+        "avg_rainfall": result[0],
+        "avg_aqi": result[1],
+        "avg_gwl": result[2],
+        "avg_temperature": result[3],
+        "avg_humidity": result[4],
+        "avg_wind_speed": result[5]
+    }
+
+    return render(request, "general_env.html", {"data": data})
+
+
+def show_date_env(request):
+    form = EnvDateForm()  # Initialize the form for GET request
+    records = None  # Default value for records
+
+    if request.method == 'POST':
+        form = EnvDateForm(request.POST)  # Bind form data
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT * FROM env_data 
+                    WHERE date_of_record >= %s AND date_of_record <= %s;
+                """, [start_date, end_date])
+                
+                records = cursor.fetchall()  # Fetch all matching records
+
+    return render(request, "show_date_env.html", {"form": form, "records": records})
+
+def show_val_env(request):
+    form = EnvValueForm()  # Initialize the form for GET request
+    records = None  # Default value for records
+
+    if request.method == 'POST':
+        form = EnvValueForm(request.POST)  # Bind form data
+        if form.is_valid():
+            # Extract form values
+            t = form.cleaned_data['temperature']
+            a = form.cleaned_data['air_quality_index']
+            g = form.cleaned_data['ground_water_level']
+            h = form.cleaned_data['humidity']
+            r = form.cleaned_data['rainfall']
+            
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT * FROM env_data 
+                    WHERE temperature >= %s OR aqi >= %s OR gwl >= %s OR humidity >= %s OR rainfall >= %s;
+                """, [t, a, g, h, r])
+                
+                records = cursor.fetchall()  # Fetch all matching records
+
+    return render(request, "show_val_env.html", {"form": form, "records": records})
+
+def show_above_avg_env(request):
+    parameters = {
+        "temperature": "Temperature",
+        "aqi": "Air Quality Index",
+        "gwl": "Ground Water Level",
+        "humidity": "Humidity",
+        "rainfall": "Rainfall"
+    }
+
+    selected_param = None
+    records = None  # Default value for records
+
+    if request.method == "POST":
+        selected_param = request.POST.get("parameter")
+
+        if selected_param in parameters:
+            with connection.cursor() as cursor:
+                # Fetch the average value for the selected parameter
+                cursor.execute(f"SELECT AVG({selected_param}) FROM env_data;")
+                avg_value = cursor.fetchone()[0]  # Extract the single value
+
+                if avg_value is not None:
+                    # Fetch all records where the parameter value is above its average
+                    cursor.execute(f"SELECT * FROM env_data WHERE {selected_param} > %s;", [avg_value])
+                    records = cursor.fetchall()
+
+    return render(request, "show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records})
+

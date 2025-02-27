@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Records Above Average</title>
+</head>
+<body>
+    <h2>Select a Parameter</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="parameter">Choose a parameter:</label>
+        <select name="parameter" id="parameter">
+            {% for key, value in parameters.items %}
+                <option value="{{ key }}" {% if selected_param == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Show Records</button>
+    </form>
+
+    {% if records is not None %}
+    <h3>Records where {{ selected_param|title }} is above average:</h3>
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Date of Record</th>
+                <th>Temperature</th>
+                <th>Air Quality Index</th>
+                <th>Ground Water Level</th>
+                <th>Humidity</th>
+                <th>Rainfall</th>
+            </tr>
+            {% for record in records %}
+                <tr>
+                    {% for field in record %}
+                        <td>{{ field }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html>

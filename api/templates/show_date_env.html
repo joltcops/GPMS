@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Environmental Data</title>
+</head>
+<body>
+    <h2>Filter Environmental Data by Date</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Results:</h3>
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Rainfall</th>
+                <th>AQI</th>
+                <th>GWL</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>Wind Speed</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                {% for field in row %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No records found for the selected date range.</p>
+    {% endif %}
+</body>
+</html>

@@ -11,7 +11,7 @@ class CitizenForm(forms.Form):
 
 class BenefitForm(forms.Form):
     scheme_id = forms.CharField(max_length=511)
-    citizen_id = forms.CharField(max_length=511)
+    applicant_id = forms.CharField(max_length=511)
 
 class CertificateForm(forms.Form):
     certificate_type = forms.CharField(max_length=511)

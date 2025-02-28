@@ -2,27 +2,85 @@
 <html>
 <head>
     <title>Government Monitor</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #111, #222, #333);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Title Styling */
+        h1 {
+            font-size: 3.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 15px rgba(255, 0, 0, 0.8);
+        }
+
+        /* Button Styling */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .button {
+            display: block;
+            width: 300px;
+            padding: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: white;
+            background: red;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+            transition: all 0.4s ease-in-out;
+        }
+
+        .button:hover {
+            background: #222;
+            color: red;
+            transform: scale(1.1);
+            box-shadow: 0 0 25px red;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Citizen Management System</h1>
-    {% for user in data %}
-    <a href="{% url 'show_general_census' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
-        <button>View Census Details</button>
-    </a>
-
-    <a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
-        <button>View Environment Details</button>
-    </a>
-    <a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
-        <button>View Infrastructural Details</button>
-    </a>
-
-    <a href="{% url 'agriculture_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
-        <button>View Agricultural Details</button>
-    </a>
-    <a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
-        <button>View Scheme Details</button>
-    </a>
-    {% endfor %}
+    <h1>Welcome to the Citizen Management System (Logged in as Government Monitor)</h1>
+    <div class="container">
+        {% for user in data %}
+        <a href="{% url 'show_general_census' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Census Details
+        </a>
+        <a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Environment Details
+        </a>
+        <a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Infrastructural Details
+        </a>
+        <a href="{% url 'agriculture_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Agricultural Details
+        </a>
+        <a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Scheme Details
+        </a>
+        {% endfor %}
+    </div>
 </body>
 </html>

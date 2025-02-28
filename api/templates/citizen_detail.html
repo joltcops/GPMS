@@ -20,7 +20,6 @@
             text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.3);
         }
 
-        /* Citizen Details Box */
         .citizen-box {
             background: #333;
             padding: 20px;
@@ -36,27 +35,45 @@
             margin: 8px 0;
         }
 
-        /* Buttons */
         a.button {
             display: inline-block;
-            padding: 10px 15px;
+            padding: 12px 20px;
             font-size: 1.2em;
             font-weight: bold;
-            background: red;
-            border: 2px solid red;
+            background: linear-gradient(135deg, #ff3b3b, #d10000);
+            border: none;
             color: white;
-            border-radius: 8px;
-            margin-top: 15px;
+            border-radius: 10px;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.3s ease-in-out;
-            box-shadow: 3px 3px 10px rgba(255, 0, 0, 0.4);
+            box-shadow: 3px 3px 15px rgba(255, 0, 0, 0.5);
+            text-align: center;
+            width: fit-content;
+            margin: 10px;
         }
 
         a.button:hover {
-            background: #222;
-            color: red;
-            box-shadow: 0px 0px 15px red;
+            background: linear-gradient(135deg, #d10000, #a60000);
+            transform: scale(1.05);
+            box-shadow: 0px 0px 20px red;
+        }
+
+        a.button:active {
+            transform: scale(0.98);
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.8);
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         hr {
@@ -72,19 +89,31 @@
 
     {% if data %}
         {% for citizen in data %}
-            <p><strong>Name:</strong> {{ citizen.name }}</p>
-            <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
-            <p><strong>Gender:</strong> {{ citizen.gender }}</p>
-            <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
-            <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
-            <p><strong>Household:</strong> {{ citizen.household_id }}</p>
-            <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
-            <a href="{% url 'members' citizen.household_id %}">View Household Members</a>
-            
-            <hr>
-             <a href="{% url 'apply_certificate'%}?citizen_id={{citizen.citizen_id}}">Apply for certificate</a>
-            
-            <hr>
+            <div class="citizen-box">
+                <p><strong>Name:</strong> {{ citizen.name }}</p>
+                <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
+                <p><strong>Gender:</strong> {{ citizen.gender }}</p>
+                <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
+                <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
+                <p><strong>Household:</strong> {{ citizen.household_id }}</p>
+                <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
+
+                <div class="button-container">
+                    <a href="{% url 'members' citizen.household_id %}" class="button">View Household Members</a>
+                </div>
+
+                <hr>
+
+                <div class="button-row">
+                    <a href="{% url 'apply_certificate' %}?citizen_id={{ citizen.citizen_id }}" class="button">Apply for Certificate</a>
+                    <a href="{% url 'apply_benefit' %}?citizen_id={{ citizen.citizen_id }}" class="button">Apply for Benefit</a>
+                </div>
+
+                <div class="button-row">
+                    <a href="{% url 'getcertificates' %}?citizen_id={{ citizen.citizen_id }}" class="button">My Certificates</a>
+                    <a href="{% url 'getbenefits' %}?citizen_id={{ citizen.citizen_id }}" class="button">My Benefits</a>
+                </div>
+            </div>
         {% endfor %}
     {% else %}
         <p>No citizen details available.</p>

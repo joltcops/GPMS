@@ -10,7 +10,7 @@ urlpatterns = [
     path("citizens/<str:fields>/", views.get_citizens),
     path("citizens/", views.getcitizens),
     path('addcitizen/', views.addcitizen),
-    path('apply_benefit/', views.add_benefit_application, name = 'apply_benefit'),
+    path('apply_benefit/', views.apply_benefit, name = 'apply_benefit'),
     path('approve_certificate/', views.approve_certificate, name = 'approve_certificate'),
     path('citizenslist/', views.citizen_list, name='citizen_list'),
     path('citizenlist/<str:citizen_id>/', views.citizen_detail, name='citizen_detail'),
@@ -53,5 +53,7 @@ urlpatterns = [
     path('certificates/<str:citizen_id>', views.certificates, name = 'certificates'),
     path('apply_certificate/', views.apply_certificate, name = 'apply_certificate'),
     path('login_view_1/', views.login_view_1, name = 'login_view_1'),
-    path('infra_gen/', views.infra_gen, name = 'infra_gen')
+    path('infra_gen/', views.infra_gen, name = 'infra_gen'),
+    path('getcertificates/', views.getcertificates, name = 'getcertificates'),
+    path('getbenefits/', views.getbenefits, name = 'getbenefits'),
 ]

@@ -11,6 +11,10 @@ from django.db import connection
 from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CertificateForm, CensusDateForm, CensusYearForm, CensusPopForm, SchemeDateForm, SchemeNameForm
 from datetime import date
 from django.http import HttpResponse
+from .models import certificate_application  # Ensure the correct import
+
+from django.db.models import Max
+import re
 
 def about(request):
     return render(request, 'about.html')
@@ -107,28 +111,38 @@ def get_citizens(request, fields):
 
 
 def generate_new_application_id():
-    last_application = benefit_application.objects.order_by('-application_id').first()
-    
-    if last_application:
-        last_id = last_application.application_id  # Example: 'BR005'
-        last_num = int(last_id[3:])  # Extract numeric part -> 5
-        new_id = f"BR00{last_num + 1}"  # Increment and format -> 'BR006'
-    else:
-        new_id = "BR001"  # If no records exist, start from 'BR001'
+    last_applications = benefit_application.objects.values_list('application_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'BR00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"BR00{max_num + 1}"  
 
     return new_id
 
 def generate_new_certificate_id():
-    last_application = certificate_application.objects.order_by('-application_id').first()
-    
-    if last_application:
-        last_id = last_application.application_id  # Example: 'BR005'
-        last_num = int(last_id[3:])  # Extract numeric part -> 5
-        new_id = f"AP00{last_num + 1}"  # Increment and format -> 'BR006'
-    else:
-        new_id = "AP001"  # If no records exist, start from 'BR001'
+    last_applications = certificate_application.objects.values_list('application_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'AP00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"AP00{max_num + 1}"  
 
     return new_id
+
+
 
 def add_citizen(request):
     if request.method == 'POST':
@@ -154,42 +168,6 @@ def add_citizen(request):
     else:
         form = CitizenForm()
     return render(request, 'addcitizen.html', {'form': form})
-
-def add_benefit_application(request):
-    if request.method == 'POST':
-        form = BenefitForm(request.POST)
-        if form.is_valid():
-            application_id = generate_new_application_id()
-            scheme_id = form.cleaned_data['scheme_id']
-            citizen_id = form.cleaned_data['citizen_id']
-
-            scheme_id_inst = welfare_schemes.objects.get(scheme_id=scheme_id)
-
-            # Replace citizen.objects.get(...) with raw SQL query
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM citizen WHERE citizen_id = %s;", [citizen_id])
-                row = cursor.fetchone()
-
-            if row is None:
-                print("Citizen not found")
-                return render(request, 'apply_benefit.html', {'form': form, 'error': 'Citizen not found'})
-
-            citizen_id_inst = row[0]  # Extract the citizen_id
-
-            new_app = benefit_application(
-                application_id=application_id,
-                citizen_id_id=citizen_id_inst,  # Use `_id` suffix for ForeignKey
-                scheme_id=scheme_id_inst,
-                status='PENDING'
-            )
-
-            print("Form is valid")
-            print(form.cleaned_data)
-            new_app.save()
-            return redirect('/api')
-    else:
-        form = BenefitForm()
-    return render(request, 'apply_benefit.html', {'form': form})
 
 def approve_certificate(request, application_id, employee_id):
     # Get application or return 404 if not found
@@ -999,7 +977,14 @@ def apply_certificate(request):
         form = CertificateForm(request.POST)
 
         if form.is_valid():
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM certificate_application;")
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    print(row)
             application_id = generate_new_certificate_id()
+            print(application_id)
             applicant_id = form.cleaned_data['applicant_id']  # Get applicant_id from form
             certificate_type = form.cleaned_data['certificate_type']
 
@@ -1027,10 +1012,20 @@ def apply_certificate(request):
                     "SELECT COUNT(*) FROM certificate_application WHERE citizen_id = %s AND certificate_type = %s;",
                     [citizen_id, certificate_type]
                 )
-                cert_exists = cursor.fetchone()[0]  # Get count
+                cert_exists1 = cursor.fetchone()[0]  # Get count
 
-            if cert_exists > 0:
+                cursor.execute(
+                    "SELECT COUNT(*) FROM certificate WHERE applicant_id = %s AND certificate_type = %s;",
+                    [citizen_id, certificate_type]
+                )
+                cert_exists2 = cursor.fetchone()[0]  # Get count
+
+
+            if cert_exists1 > 0:
                 return render(request, 'apply_certificate.html', {'form': form, 'error': 'Certificate already applied for.'})
+            
+            if cert_exists2 > 0:
+                return render(request, 'apply_certificate.html', {'form': form, 'error': 'Certificate already issued.'})
 
             # Extract password from users table
             with connection.cursor() as cursor:
@@ -1062,3 +1057,123 @@ def apply_certificate(request):
         form = CertificateForm()
     
     return render(request, 'apply_certificate.html', {'form': form})
+
+def apply_benefit(request):
+    citizen_id = request.GET.get("citizen_id")  # Fetch from GET request
+
+    if request.method == 'POST':
+        form = BenefitForm(request.POST)
+
+        if form.is_valid():
+            application_id = generate_new_application_id()
+            applicant_id = form.cleaned_data['applicant_id']  # Get applicant_id from form
+            scheme_id = form.cleaned_data['scheme_id']
+
+            # Query citizen using raw SQL
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT citizen_id FROM citizen WHERE citizen_id = %s;", [citizen_id])
+                row = cursor.fetchone()
+
+                # cursor.execute("SELECT * FROM welfare_schemes WHERE scheme_id = %s;", [scheme_id])
+                # scheme_inst = cursor.fetchone()
+
+                cursor.execute("SELECT user_id, role, password_user FROM users JOIN citizen ON citizen.citizen_id = users.user_id WHERE citizen.citizen_id = %s", [citizen_id])
+                user_entry = cursor.fetchone()
+
+            if row is None:
+                print("Citizen not found")
+                return render(request, 'apply_benefit.html', {'form': form, 'error': 'Citizen not found'})
+
+            citizen_id_inst = row[0]  # Extract the citizen_id
+            try:
+                scheme_inst = welfare_schemes.objects.get(scheme_id=scheme_id)
+            except welfare_schemes.DoesNotExist:
+                return render(request, 'apply_benefit.html', {'form': form, 'error': 'Welfare scheme not found'})
+
+            #scheme_id_inst = scheme_inst[0]
+
+            # **Check if applicant_id matches citizen_id**
+            if str(applicant_id) != str(citizen_id_inst):  
+                return render(request, 'apply_benefit.html', {'form': form, 'error': 'Applicant ID does not match Citizen ID.'})
+
+            # Check if certificate has already been applied
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) FROM benefit_application WHERE citizen_id = %s AND scheme_id = %s;",
+                    [citizen_id, scheme_id]
+                )
+                bene_exists = cursor.fetchone()[0]  # Get count
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) FROM scheme_enrollments WHERE citizen_id = %s AND scheme_id = %s;",
+                    [citizen_id, scheme_id]
+                )
+                bene1_exists = cursor.fetchone()[0]  # Get count
+
+            if bene_exists > 0:
+                return render(request, 'apply_benefit.html', {'form': form, 'error': 'Benefit already applied for.'})
+            
+            if bene1_exists > 0:
+                return render(request, 'apply_benefit.html', {'form': form, 'error': 'Benefit already issued.'})
+
+            # Extract password from users table
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT password_user FROM users WHERE user_id = %s;", [citizen_id])
+                user_row = cursor.fetchone()
+
+            if user_row is None:
+                print("User not found in users table")
+                return render(request, 'apply_benefit.html', {'form': form, 'error': 'User not found'})
+
+            password = user_row[0]  # Extract password from the database
+
+            # Insert new certificate application
+            new_app = benefit_application(
+                application_id=application_id,
+                scheme_id=scheme_inst,
+                citizen_id_id=citizen_id_inst,
+                status='PENDING'
+            )
+
+            print("Form is valid")
+            print(form.cleaned_data)
+            new_app.save()
+
+            # Redirect to login_view with userid (citizen_id), role as CITIZEN, and extracted password
+            return redirect(f'/api/login_view?userid={citizen_id_inst}&role=CITIZEN&password={password}')
+    
+    else:
+        form = BenefitForm()
+    
+    return render(request, 'apply_benefit.html', {'form': form})
+
+def getcertificates(request):
+    citizen_id = request.GET.get("citizen_id")
+    
+    records = None
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT c1.name, certificate_type, issue_date, c2.name FROM certificate JOIN citizen c1 ON c1.citizen_id = certificate.applicant_id JOIN panchayat_employees ON panchayat_employees.employee_id = certificate.issuing_official JOIN citizen c2 ON panchayat_employees.citizen_id = c2.citizen_id WHERE c1.citizen_id = %s;", [citizen_id])
+        records = cursor.fetchall()
+
+        cursor.execute("SELECT password_user FROM users WHERE user_id = %s;", [citizen_id])
+        user_row = cursor.fetchone()
+
+        password = user_row[0]  # Extract password from the database
+
+    return render(request, "getcertificates.html", {'records': records, "user_id": citizen_id, "password": password})
+
+def getbenefits(request):
+    citizen_id = request.GET.get("citizen_id")
+    
+    records = None
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT citizen.name, welfare_schemes.name, enrollment_date FROM scheme_enrollments JOIN citizen ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON welfare_schemes.scheme_id = scheme_enrollments.scheme_id WHERE citizen.citizen_id = %s;", [citizen_id])
+        records = cursor.fetchall()
+
+        cursor.execute("SELECT password_user FROM users WHERE user_id = %s;", [citizen_id])
+        user_row = cursor.fetchone()
+
+        password = user_row[0]  # Extract password from the database
+
+    return render(request, "getbenefits.html", {'records': records, "user_id": citizen_id, "password": password})

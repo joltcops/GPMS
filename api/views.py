@@ -35,8 +35,10 @@ def getcitizens(request):
     return Response(CitizenSerializer.data)
 
 def getschemes(request):
+    user_id = request.GET.get("user_id")
+    password = request.GET.get("password")
     schemes=welfare_schemes.objects.all()
-    return render(request, 'schemes.html', {'schemes': schemes})
+    return render(request, 'schemes.html', {'schemes': schemes, "user_id":user_id, "password":password})
 
 def getschemes_gen(request):
     schemes=welfare_schemes.objects.all()
@@ -464,10 +466,12 @@ def show_loc_infra(request):
 
 
 def agriculture_data(request):
+    user_id = request.GET.get("user_id")
+    password = request.GET.get("password")
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT crop_type, SUM(area_acres) FROM land_records GROUP BY crop_type")
         results = cursor.fetchall()
-    return render(request, 'agriculture_data.html', {'land_records':results})
+    return render(request, 'agriculture_data.html', {'land_records':results, "user_id":user_id, "password":password})
 
 def show_income_agri(request):
     form = AgriIncome()
@@ -567,6 +571,8 @@ def government_monitor(request):
     return render(request, 'government_monitor.html')
 
 def show_general_census(request):
+    user_id = request.GET.get("user_id")
+    password = request.GET.get("password")
     today = date.today()
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -594,7 +600,7 @@ def show_general_census(request):
         "deaths": result2[0],
     }
 
-    return render(request, "show_general_census.html", {"data": data})
+    return render(request, "show_general_census.html", {"data": data, "user_id":user_id, "password":password})
 
 def census_data_func(request):
     form = CensusDateForm()

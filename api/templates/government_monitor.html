@@ -5,24 +5,24 @@
 </head>
 <body>
     <h1>Welcome to the Citizen Management System</h1>
-    <a href="{% url 'show_general_census' %}">
+    {% for user in data %}
+    <a href="{% url 'show_general_census' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
         <button>View Census Details</button>
     </a>
 
-    {% for user in data %}
     <a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
         <button>View Environment Details</button>
     </a>
     <a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
         <button>View Infrastructural Details</button>
     </a>
-    {% endfor %}
 
-    <a href="{% url 'agriculture_data_login' %}">
+    <a href="{% url 'agriculture_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
         <button>View Agricultural Details</button>
     </a>
-    <a href="{% url 'schemes' %}">
+    <a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
         <button>View Scheme Details</button>
     </a>
+    {% endfor %}
 </body>
 </html>

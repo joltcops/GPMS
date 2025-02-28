@@ -127,8 +127,9 @@
         <button type="submit">Show Citizens with Land Area more than a Particular Value</button>
     </form>
 
-    <br>
-    <a href="{% url 'home' %}">Back to Home</a>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
 
 </body>
 </html>

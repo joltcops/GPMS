@@ -147,6 +147,8 @@
         <button type="submit">Show Income and Tax Stats of People Alive on a Given Date</button>
     </form>
 
-    <a href="{% url 'home' %}">Back to Home</a>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
 </body>
 </html>

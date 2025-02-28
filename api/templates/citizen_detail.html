@@ -1,29 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizen Details</title>
+    {% load static %} 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Citizen Details Box */
+        .citizen-box {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 60%;
+            margin: 20px auto;
+            text-align: left;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        .citizen-box p {
+            font-size: 1.2em;
+            margin: 8px 0;
+        }
+
+        /* Buttons */
+        a.button {
+            display: inline-block;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: red;
+            border: 2px solid red;
+            color: white;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 3px 3px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        a.button:hover {
+            background: #222;
+            color: red;
+            box-shadow: 0px 0px 15px red;
+        }
+
+        hr {
+            border: 1px solid red;
+            width: 50%;
+            margin: 20px auto;
+        }
+    </style>
 </head>
 <body>
+
     <h1>Citizen Details</h1>
 
     {% if data %}
         {% for citizen in data %}
-            <p><strong>Name:</strong> {{ citizen.name }}</p>
-            <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
-            <p><strong>Gender:</strong> {{ citizen.gender }}</p>
-            <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
-            <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
-            <p><strong>Household:</strong> {{ citizen.household_id }}</p>
-            <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
-            <a href="{% url 'members' citizen.household_id %}">View Household Members</a>
-            
-            <hr>
-             <a href="{% url 'apply_certificate'%}">Apply for certificate</a>
-            
-            <hr>
+            <div class="citizen-box">
+                <p><strong>Name:</strong> {{ citizen.name }}</p>
+                <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
+                <p><strong>Gender:</strong> {{ citizen.gender }}</p>
+                <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
+                <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
+                <p><strong>Household:</strong> {{ citizen.household_id }}</p>
+                <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
+                
+                <a href="{% url 'members' citizen.household_id %}" class="button">View Household Members</a>
+                <hr>
+                <a href="{% url 'apply_certificate' %}" class="button">Apply for Certificate</a>
+            </div>
         {% endfor %}
     {% else %}
         <p>No citizen details available.</p>
     {% endif %}
+
 </body>
 </html>

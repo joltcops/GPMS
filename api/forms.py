@@ -41,3 +41,14 @@ class AgriIncome(forms.Form):
 
 class AgriArea(forms.Form):
     area = forms.IntegerField()
+
+class CensusDateForm(forms.Form):
+    year = forms.IntegerField()
+    month = forms.IntegerField()
+
+class CensusYearForm(forms.Form):
+    start_date = forms.DateField()
+    end_date = forms.DateField()
+
+class CensusPopForm(forms.Form):
+    date_pop = forms.DateField()

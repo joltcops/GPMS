@@ -84,55 +84,51 @@
 </head>
 <body>
 
-    <h2>Average Environmental Data</h2>
+    <h2>Census Stats for this Year</h2>
 
     {% if error %}
         <p>{{ error }}</p>
     {% else %}
         <table>
             <tr>
-                <th>Parameter</th>
-                <th>Average Value</th>
+                <th>Event Type</th>
+                <th>Count</th>
             </tr>
             <tr>
-                <td>Rainfall</td>
-                <td>{{ data.avg_rainfall|default:"N/A" }}</td>
+                <td>Births</td>
+                <td>{{ data.births|default:"N/A" }}</td>
             </tr>
             <tr>
-                <td>Air Quality Index (AQI)</td>
-                <td>{{ data.avg_aqi|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Ground Water Level (GWL)</td>
-                <td>{{ data.avg_gwl|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Temperature</td>
-                <td>{{ data.avg_temperature|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Humidity</td>
-                <td>{{ data.avg_humidity|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Wind Speed</td>
-                <td>{{ data.avg_wind_speed|default:"N/A" }}</td>
+                <td>Deaths</td>
+                <td>{{ data.deaths|default:"N/A" }}</td>
             </tr>
         </table>
     {% endif %}
 
     <br>
 
-    <form action="{% url 'show_date_env' %}" method="get">
-        <button type="submit">Show All Records Between Two Dates</button>
+    <form action="{% url 'census_data' %}" method="get">
+        <button type="submit">Show Stats for a particular year and month</button>
     </form>
 
-    <form action="{% url 'show_val_env' %}" method="get">
-        <button type="submit">Show Records with at Least One Parameter Above Specified Values</button>
+    <form action="{% url 'census_date_count' %}" method="get">
+        <button type="submit">Show Stats Between Two Dates</button>
     </form>
 
-    <form action="{% url 'show_above_avg_env' %}" method="get">
-        <button type="submit">Show Records with a Parameter Above Average</button>
+    <form action="{% url 'census_pop_count' %}" method="get">
+        <button type="submit">Show Population on a Given Date</button>
+    </form>
+
+    <form action="{% url 'census_edu_count' %}" method="get">
+        <button type="submit">Show Educational Qualification of People Alive on a Given Date</button>
+    </form>
+
+    <form action="{% url 'census_vacc_count' %}" method="get">
+        <button type="submit">Show Vaccination Stats of People Alive on a Given Date</button>
+    </form>
+
+    <form action="{% url 'census_income_count' %}" method="get">
+        <button type="submit">Show Income and Tax Stats of People Alive on a Given Date</button>
     </form>
 
     <a href="{% url 'home' %}">Back to Home</a>

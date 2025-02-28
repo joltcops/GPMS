@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agriculture Data</title>
+    <title>Education-wise Census Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +13,7 @@
             padding: 40px;
         }
 
-        h2, h3 {
+        h2 {
             font-size: 2em;
             margin-bottom: 20px;
             color: red;
@@ -28,18 +28,8 @@
             box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.5);
         }
 
-        label, select {
+        form p {
             font-size: 1.2em;
-            color: white;
-        }
-
-        select, input {
-            padding: 10px;
-            border-radius: 5px;
-            background: #444;
-            color: white;
-            border: 1px solid red;
-            margin: 10px;
         }
 
         button {
@@ -59,7 +49,7 @@
         }
 
         table {
-            width: 60%;
+            width: 80%;
             margin: 20px auto;
             border-collapse: collapse;
             background: #333;
@@ -106,7 +96,7 @@
 </head>
 <body>
 
-    <h2>Filter Agriculture Data</h2>
+    <h2>Filter Census Data by Date and Education</h2>
 
     <form method="post">
         {% csrf_token %}
@@ -115,22 +105,21 @@
     </form>
 
     {% if records %}
-        <h3>Results:</h3>
+        <h3>Education-wise Population Count</h3>
         <table>
             <tr>
-                <th>Name</th>
-                <th>Area Cultivated (in acres)</th>
+                <th>Educational Qualification</th>
+                <th>Population Count</th>
             </tr>
             {% for row in records %}
             <tr>
-                {% for field in row %}
-                <td>{{ field }}</td>
-                {% endfor %}
+                <td>{{ row.0 }}</td>
+                <td>{{ row.1 }}</td>
             </tr>
             {% endfor %}
         </table>
     {% else %}
-        <p>No records found for the selected filter.</p>
+        <p>No records found for the selected date range.</p>
     {% endif %}
 
     <a href="{% url 'home' %}">Back to Home</a>

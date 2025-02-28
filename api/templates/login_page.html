@@ -5,13 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     {% load static %} 
-    <link rel="stylesheet" href="../static/styles/login_page.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0px 3px 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .topbar-left {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: red;
+        }
+
+        .topbar-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 1.2em;
+            transition: 0.3s;
+        }
+
+        .topbar-right a:hover {
+            color: red;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Form Styling */
+        form {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 320px;
+            margin: 0 auto;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        label {
+            font-size: 1.2em;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: white;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: red;
+            border: 2px solid red;
+            color: white;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 3px 3px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        button:hover {
+            background: #222;
+            color: red;
+            box-shadow: 0px 0px 15px red;
+        }
+    </style>
 </head>
 <body>
+
     <!-- Topbar -->
     <div class="topbar">
-
-
         <div class="topbar-left">GPMS</div>
         <div class="topbar-right">
             <a href="../">Home</a>
@@ -28,7 +122,6 @@
         <!-- User ID Field -->
         <label for="userid">User ID:</label>
         <input type="text" id="userid" name="userid" placeholder="Enter your User ID" required>
-        <br><br>
 
         <!-- Role Dropdown -->
         <label for="role">Role:</label>
@@ -39,15 +132,14 @@
             <option value="CITIZEN">Citizen</option>
             <option value="MONITOR">Monitor</option>
         </select>
-        <br><br>
 
         <!-- Password Field -->
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" placeholder="Enter your password" required>
-        <br><br>
 
         <!-- Submit Button -->
         <button type="submit">Login</button>
     </form>
+
 </body>
 </html>

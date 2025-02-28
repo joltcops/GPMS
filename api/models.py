@@ -46,10 +46,6 @@ class household(models.Model):
         managed=True
 
     def __str__(self):
-        db_table = 'household'
-        managed=True
-
-    def __str__(self):
         return self.address
 
 

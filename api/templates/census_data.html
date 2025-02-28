@@ -3,35 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Census Data</title>
-    <link rel="stylesheet" href="../static/styles/census_data.css">
+    <title>Environmental Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: red;
+            text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);
+        }
+
+        form {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.5);
+        }
+
+        form p {
+            font-size: 1.2em;
+        }
+
+        button {
+            background: red;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: darkred;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: #333;
+            color: white;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.5);
+        }
+
+        th, td {
+            padding: 15px;
+            border: 1px solid white;
+        }
+
+        th {
+            background: red;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        td {
+            font-size: 1.1em;
+        }
+
+        p {
+            font-size: 1.2em;
+            color: red;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background: red;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            background: darkred;
+        }
+    </style>
 </head>
 <body>
-    <h1>Census Data for Selected Year and Month</h1>
 
-    {% if data %}
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for key in data.0.keys %}
-                        <th>{{ key }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in data %}
-                    <tr>
-                        {% for value in row.values %}
-                            <td>{{ value }}</td>
-                        {% endfor %}
-                    </tr>
+    <h2>Census Data for a Selected Year and Month</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Results:</h3>
+        <table>
+            <tr>
+                <th>Citizen Name</th>
+                <th>Event Type</th>
+                <th>Date</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                {% for field in row %}
+                <td>{{ field }}</td>
                 {% endfor %}
-            </tbody>
+            </tr>
+            {% endfor %}
         </table>
     {% else %}
-        <p>No data available for the selected year and month.</p>
+        <p>No records found for the selected date range.</p>
     {% endif %}
 
-    <br>
+    <a href="{% url 'home' %}">Back to Home</a>
+
 </body>
 </html>

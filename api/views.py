@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CertificateForm
+from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CertificateForm, CensusDateForm, CensusYearForm, CensusPopForm
 from datetime import date
 from django.http import HttpResponse
 
@@ -493,30 +493,229 @@ def infrastructure_data_login(request):
 def government_monitor(request):
     return render(request, 'government_monitor.html')
 
-def census_data_func(request):
-    if request.method == "POST":
-        year = request.POST.get("year")
-        month = request.POST.get("month")
-        
-        if not year or not month:
-            return HttpResponse("Year and Month are required.")
-        
-        try:
-            with connection.cursor() as cursor:
-                query = """
-                SELECT * FROM census_data
-                WHERE EXTRACT(YEAR FROM event_date) = %s
-                AND EXTRACT(MONTH FROM event_date) = %s;
-                """
-                cursor.execute(query, [year, month])
-                columns = [col[0] for col in cursor.description]
-                data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-            
-            return render(request, "census_data.html", {"data": data})
-        except Exception as e:
-            return HttpResponse(f"Error fetching data: {e}")
+def show_general_census(request):
+    today = date.today()
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM census_data WHERE event_type = 'Birth' AND EXTRACT(YEAR FROM event_date)=%s;
+        """, [today.year])
+        result1 = cursor.fetchone()  # Fetch a single row
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM census_data WHERE event_type = 'Death' AND EXTRACT(YEAR FROM event_date)=%s;
+        """, [today.year])
+        result2 = cursor.fetchone()  # Fetch a single row
+
+    # Check if result is None (in case the table is empty)
+    if result1 is None or all(v is None for v in result1):
+        return render(request, "show_general_census.html", {"error": "No data available"})
     
-    return HttpResponse("Invalid request method.")
+    if result2 is None or all(v is None for v in result1):
+        return render(request, "show_general_census.html", {"error": "No data available"})
+
+    # Convert the tuple to a dictionary
+    data = {
+        "births": result1[0],
+        "deaths": result2[0],
+    }
+
+    return render(request, "show_general_census.html", {"data": data})
+
+def census_data_func(request):
+    form = CensusDateForm()
+    records = None
+
+    if request.method == 'POST':
+        form = CensusDateForm(request.POST)
+        if form.is_valid():
+            year = form.cleaned_data['year']
+            month = form.cleaned_data['month']
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT name, event_type, event_date FROM census_data JOIN citizen ON citizen.citizen_id = census_data.citizen_id WHERE EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s;", [year, month])
+                records = cursor.fetchall()
+
+    return render(request, "census_data.html", {"form":form, "records": records})
+
+def census_date_count(request):
+    form = CensusYearForm()
+    records = None
+
+    if request.method == 'POST':
+        form = CensusYearForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT
+                        (SELECT COUNT(*) FROM census_data WHERE event_date BETWEEN %s AND %s AND event_type = 'Birth') AS total_births,
+                        (SELECT COUNT(*) FROM census_data WHERE event_date BETWEEN %s AND %s AND event_type = 'Death') AS total_deaths,
+                        (SELECT COUNT(*) FROM census_data 
+                         JOIN citizen ON census_data.citizen_id = citizen.citizen_id
+                         WHERE event_date BETWEEN %s AND %s AND event_type = 'Birth' AND gender = 'Male') AS male_births,
+                        (SELECT COUNT(*) FROM census_data 
+                         JOIN citizen ON census_data.citizen_id = citizen.citizen_id
+                         WHERE event_date BETWEEN %s AND %s AND event_type = 'Birth' AND gender = 'Female') AS female_births;
+                """, [start_date, end_date] * 4)
+                
+                records = cursor.fetchone()  # Fetch as a tuple
+
+    return render(request, "census_date_count.html", {"form": form, "records": records})
+
+def census_pop_count(request):
+    form = CensusPopForm()
+    records = None
+
+    if request.method == 'POST':
+        form = CensusPopForm(request.POST)
+        if form.is_valid():
+            event_date = form.cleaned_data['date_pop']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT
+                        COUNT(*) FILTER (
+                            WHERE citizen.citizen_id NOT IN (
+                                SELECT citizen_id FROM census_data 
+                                WHERE event_type = 'Death' AND event_date < %s
+                            ) 
+                            AND citizen.citizen_id IN (
+                                SELECT citizen_id FROM census_data 
+                                WHERE event_type = 'Birth' AND event_date <= %s
+                            )
+                        ) AS total_population,
+                        
+                        COUNT(*) FILTER (
+                            WHERE citizen.gender = 'Male' 
+                            AND citizen.citizen_id NOT IN (
+                                SELECT citizen_id FROM census_data 
+                                WHERE event_type = 'Death' AND event_date < %s
+                            ) 
+                            AND citizen.citizen_id IN (
+                                SELECT citizen_id FROM census_data 
+                                WHERE event_type = 'Birth' AND event_date <= %s
+                            )
+                        ) AS male_count,
+                        
+                        COUNT(*) FILTER (
+                            WHERE citizen.gender = 'Female' 
+                            AND citizen.citizen_id NOT IN (
+                                SELECT citizen_id FROM census_data 
+                                WHERE event_type = 'Death' AND event_date < %s
+                            ) 
+                            AND citizen.citizen_id IN (
+                                SELECT citizen_id FROM census_data 
+                                WHERE event_type = 'Birth' AND event_date <= %s
+                            )
+                        ) AS female_count
+                    FROM citizen
+                    JOIN census_data ON citizen.citizen_id = census_data.citizen_id;
+                """, [event_date] * 6)
+
+                records = cursor.fetchone()
+
+    return render(request, "census_pop_count.html", {"form": form, "records": records})
+
+def census_edu_count(request):
+    form = CensusPopForm()
+    records = None
+
+    if request.method == 'POST':
+        form = CensusPopForm(request.POST)
+        if form.is_valid():
+            event_date = form.cleaned_data['date_pop']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT 
+                        citizen.educational_qualification, 
+                        COUNT(DISTINCT citizen.citizen_id) 
+                    FROM citizen
+                    JOIN census_data ON citizen.citizen_id = census_data.citizen_id
+                    WHERE citizen.citizen_id NOT IN (
+                        SELECT citizen_id FROM census_data 
+                        WHERE event_type = 'Death' AND event_date < %s
+                    ) 
+                    AND citizen.citizen_id IN (
+                        SELECT citizen_id FROM census_data 
+                        WHERE event_type = 'Birth' AND event_date <= %s
+                    )
+                    GROUP BY citizen.educational_qualification;
+                """, [event_date] * 2)
+
+                records = cursor.fetchall()
+
+    return render(request, "census_edu_count.html", {"form": form, "records": records})
+
+def census_vacc_count(request):
+    form = CensusPopForm()
+    records = None
+
+    if request.method == 'POST':
+        form = CensusPopForm(request.POST)
+        if form.is_valid():
+            event_date = form.cleaned_data['date_pop']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT 
+                        vaccinations.vaccine_type, 
+                        COUNT(DISTINCT citizen.citizen_id) 
+                    FROM citizen
+                    JOIN census_data ON citizen.citizen_id = census_data.citizen_id
+                    JOIN vaccinations ON citizen.citizen_id = vaccinations.citizen_id
+                    WHERE citizen.citizen_id NOT IN (
+                        SELECT citizen_id FROM census_data 
+                        WHERE event_type = 'Death' AND event_date < %s
+                    ) 
+                    AND citizen.citizen_id IN (
+                        SELECT citizen_id FROM census_data 
+                        WHERE event_type = 'Birth' AND event_date <= %s
+                    )
+                    GROUP BY vaccinations.vaccine_type;
+                """, [event_date] * 2)
+
+                records = cursor.fetchall()
+
+    return render(request, "census_vacc_count.html", {"form": form, "records": records})
+
+def census_income_count(request):
+    form = CensusPopForm()
+    records = None
+
+    if request.method == 'POST':
+        form = CensusPopForm(request.POST)
+        if form.is_valid():
+            event_date = form.cleaned_data['date_pop']
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT 
+                        COALESCE(AVG(citizen.income), 0) AS avg_income, 
+                        COUNT(DISTINCT tax.payer_id) AS pending_tax_count,
+                        COALESCE(AVG(tax.amount), 0) AS avg_pending_tax_amount
+                    FROM citizen
+                    LEFT JOIN tax ON citizen.citizen_id = tax.payer_id 
+                        AND tax.paid_status = 'DUE' 
+                        AND tax.due_date <= %s
+                    WHERE citizen.citizen_id NOT IN (
+                        SELECT citizen_id FROM census_data 
+                        WHERE event_type = 'Death' AND event_date < %s
+                    ) 
+                    AND citizen.citizen_id IN (
+                        SELECT citizen_id FROM census_data 
+                        WHERE event_type = 'Birth' AND event_date <= %s
+                    );
+                """, [event_date] * 3)
+
+                records = cursor.fetchone()
+
+    return render(request, "census_income_count.html", {"form": form, "records": records})
+
 
 def login_view(request):
     if request.method == "POST":
@@ -643,6 +842,9 @@ def apply_certificate(request):
                 cursor.execute("SELECT * FROM citizen WHERE citizen_id = %s;", [citizen_id])
                 row = cursor.fetchone()
 
+                cursor.execute("SELECT user_id, role, password_user FROM users JOIN citizen ON citizen.citizen_id = users.user_id WHERE citizen.citizen_id = %s", [citizen_id])
+                user_entry = cursor.fetchone()
+
             if row is None:
                 print("Citizen not found")
                 return render(request, 'apply_certificate.html', {'form': form, 'error': 'Citizen not found'})
@@ -659,7 +861,7 @@ def apply_certificate(request):
             print("Form is valid")
             print(form.cleaned_data)
             new_app.save()
-            return redirect('/api')
+            return redirect(f'/api/login_view?userid={citizen_id}&role=CITIZEN&password={user_entry[2]}')
     else:
         form = CertificateForm()
     return render(request, 'apply_certificate.html', {'form': form})

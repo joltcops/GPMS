@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agriculture Data</title>
+    <title>Census Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +13,7 @@
             padding: 40px;
         }
 
-        h2, h3 {
+        h2 {
             font-size: 2em;
             margin-bottom: 20px;
             color: red;
@@ -28,18 +28,8 @@
             box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.5);
         }
 
-        label, select {
+        form p {
             font-size: 1.2em;
-            color: white;
-        }
-
-        select, input {
-            padding: 10px;
-            border-radius: 5px;
-            background: #444;
-            color: white;
-            border: 1px solid red;
-            margin: 10px;
         }
 
         button {
@@ -106,7 +96,7 @@
 </head>
 <body>
 
-    <h2>Filter Agriculture Data</h2>
+    <h2>Census Data for Selected Date Range</h2>
 
     <form method="post">
         {% csrf_token %}
@@ -118,19 +108,28 @@
         <h3>Results:</h3>
         <table>
             <tr>
-                <th>Name</th>
-                <th>Area Cultivated (in acres)</th>
+                <th>Category</th>
+                <th>Count</th>
             </tr>
-            {% for row in records %}
             <tr>
-                {% for field in row %}
-                <td>{{ field }}</td>
-                {% endfor %}
+                <td>Births</td>
+                <td>{{ records.0|default:"N/A" }}</td>
             </tr>
-            {% endfor %}
+            <tr>
+                <td>Deaths</td>
+                <td>{{ records.1|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Male Births</td>
+                <td>{{ records.2|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Female Births</td>
+                <td>{{ records.3|default:"N/A" }}</td>
+            </tr>
         </table>
     {% else %}
-        <p>No records found for the selected filter.</p>
+        <p>No records found for the selected date range.</p>
     {% endif %}
 
     <a href="{% url 'home' %}">Back to Home</a>

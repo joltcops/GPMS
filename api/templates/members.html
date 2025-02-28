@@ -1,20 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Household Members</title>
+    {% load static %} 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Member Details Box */
+        .member-box {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 60%;
+            margin: 20px auto;
+            text-align: left;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        .member-box p {
+            font-size: 1.2em;
+            margin: 8px 0;
+        }
+
+        hr {
+            border: 1px solid red;
+            width: 50%;
+            margin: 20px auto;
+        }
+    </style>
 </head>
 <body>
+
     <h1>Household Members</h1>
 
     {% if members %}
         {% for member in members %}
-            <p><strong>Name:</strong> {{ member.name }}</p>
-            <p><strong>ID:</strong> {{ member.citizen_id }}</p>
-            <p><strong>Gender:</strong> {{ member.gender }}</p>
-            <p><strong>Date of Birth:</strong> {{ member.dob }}</p>
-            <p><strong>Educational Qualification:</strong> {{ member.educational_qualification }}</p>
-            <p><strong>Household:</strong> {{ member.household_id }}</p>
-            <p><strong>Parent:</strong> {{ member.parent }}</p>
+            <div class="member-box">
+                <p><strong>Name:</strong> {{ member.name }}</p>
+                <p><strong>ID:</strong> {{ member.citizen_id }}</p>
+                <p><strong>Gender:</strong> {{ member.gender }}</p>
+                <p><strong>Date of Birth:</strong> {{ member.dob }}</p>
+                <p><strong>Educational Qualification:</strong> {{ member.educational_qualification }}</p>
+                <p><strong>Household:</strong> {{ member.household_id }}</p>
+                <p><strong>Parent:</strong> {{ member.parent }}</p>
+            </div>
             <hr>
         {% endfor %}
     {% else %}

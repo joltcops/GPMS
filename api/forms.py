@@ -1,4 +1,5 @@
 from django import forms
+from .models import citizen, household
 
 class CitizenForm(forms.Form):
     citizen_id = forms.CharField(max_length=511)
@@ -9,6 +10,7 @@ class CitizenForm(forms.Form):
     household = forms.CharField(max_length=511)
     parent = forms.CharField(max_length=511)
     income = forms.IntegerField()
+    
 
 class LandForm(forms.Form):
     land_id = forms.CharField(max_length=511)
@@ -74,24 +76,13 @@ class CertificateApprovalForm(forms.Form):
     certificate_id = forms.CharField(max_length=511)
     issue_date = forms.DateField()
     issuing_official = forms.CharField(max_length=511)
-# -- Create the scheme_enrollments table
-# CREATE TABLE scheme_enrollments (
-#     enrollment_id VARCHAR(511),
-#     citizen_id VARCHAR(511),
-#     scheme_id VARCHAR(511),
-#     enrollment_date DATE NOT NULL,
-#     PRIMARY KEY (enrollment_id),
-#     FOREIGN KEY (citizen_id) REFERENCES citizen(citizen_id),
-#     FOREIGN KEY (scheme_id) REFERENCES welfare_schemes(scheme_id)
-# );
-# CREATE TABLE benefit_application(
-#      application_id VARCHAR(511) PRIMARY KEY,
-#      citizen_id VARCHAR(511) NOT NULL,
-#      scheme_id VARCHAR(511) NOT NULL,
-#      status VARCHAR(511) NOT NULL CHECK (status IN ('PENDING', 'APPROVED')),
-#      FOREIGN KEY (scheme_id) REFERENCES welfare_schemes(scheme_id),
-#      FOREIGN KEY (citizen_id) REFERENCES citizen(citizen_id)
-# );
+
 class BenefitApprovalForm(forms.Form):
     enrollment_id = forms.CharField(max_length=511)
     enrollment_date = forms.DateField()
+
+class EmployeeForm(forms.Form):
+    employee_id = forms.CharField(max_length=511)
+    citizen_id = forms.CharField(max_length=511)
+    department = forms.CharField(max_length=511)
+    role = forms.CharField(max_length=511)

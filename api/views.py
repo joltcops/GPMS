@@ -8,13 +8,58 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, BenefitForm, CertificateForm,CertificateApprovalForm, BenefitApprovalForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, BenefitForm, CertificateForm,CertificateApprovalForm, BenefitApprovalForm, EmployeeForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.db import connection
 from django.http import HttpResponseRedirect
 from datetime import date
+
+def generate_new_certapp_id():
+    last_application = certificate_application.objects.order_by('-application_id').first()
+    
+    if last_application:
+        last_id = last_application.application_id  # Example: 'C005'
+        last_num = int(last_id[2:])  # Extract numeric part -> 5
+        new_id = f"AP00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "AP001"  # If no records exist, start from 'BR001'
+
+    return new_id
+def generate_new_census_id():
+    last_census = census_data.objects.order_by('-census_id').first()
+    
+    if last_census:
+        last_id = last_census.census_id  # Example: 'C005'
+        last_num = int(last_id[7:])  # Extract numeric part -> 5
+        new_id = f"CENSUS00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "CENSUS001"  # If no records exist, start from 'BR001'
+
+    return new_id
+def generate_new_application_id():
+    last_application = benefit_application.objects.order_by('-application_id').first()
+    
+    if last_application:
+        last_id = last_application.application_id  # Example: 'BR005'
+        last_num = int(last_id[3:])  # Extract numeric part -> 5
+        new_id = f"BR00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "BR001"  # If no records exist, start from 'BR001'
+
+    return new_id
+def generate_new_citizen_id():
+    last_citizen = citizen.objects.order_by('-citizen_id').first()
+    
+    if last_citizen:
+        last_id = last_citizen.citizen_id  # Example: 'C005'
+        last_num = int(last_id[2:])  # Extract numeric part -> 5
+        new_id = f"C00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "C001"  # If no records exist, start from 'BR001'
+
+    return new_id
 
 def add_citizen(request):
     if request.method == 'POST':
@@ -29,7 +74,8 @@ def add_citizen(request):
             educational_qualification=form.cleaned_data['educational_qualification']
             income=form.cleaned_data['income']
 
-            user_id=form.cleaned_data['citizen_id']
+
+            user_id=citizen_id
             role="CITIZEN"
             password_user='123456'
 
@@ -143,15 +189,7 @@ def certificate_approve(request, application_id):
     else:
         form = CertificateApprovalForm()
     return render(request, 'employee/certificate_approve.html', {'form': form})
-# CREATE TABLE scheme_enrollments (
-#     enrollment_id VARCHAR(511),
-#     citizen_id VARCHAR(511),
-#     scheme_id VARCHAR(511),
-#     enrollment_date DATE NOT NULL,
-#     PRIMARY KEY (enrollment_id),
-#     FOREIGN KEY (citizen_id) REFERENCES citizen(citizen_id),
-#     FOREIGN KEY (scheme_id) REFERENCES welfare_schemes(scheme_id)
-# );
+
 def benefit_approve(request, application_id):
     if request.method == 'POST':
         form = BenefitApprovalForm(request.POST)
@@ -591,3 +629,118 @@ def add_house(request):
     else:
         form = HouseForm()
     return render(request, 'employee/addhouse.html', {'form': form})
+
+def add_employee(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST)
+        if form.is_valid():
+            employee_id=form.cleaned_data['employee_id']
+            citizen_id=form.cleaned_data['citizen_id']
+            department=form.cleaned_data['department']
+            role = form.cleaned_data['role']
+
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)", [employee_id, role, '123456'])
+            cursor.execute("INSERT INTO  panchayat_employees (employee_id, citizen_id, role, department) VALUES (%s, %s, %s, %s)", [employee_id, citizen_id, role, department])
+            
+            print("Form is valid")
+            print(form.cleaned_data)
+
+            form = EmployeeForm()
+    else:
+        form = EmployeeForm()
+    return render(request, 'admin/addemployee.html', {'form': form})
+
+def admhome(request):
+    return render(request, 'admin/admhome.html')
+
+def admempdetails(request, employee_id):
+    emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE employee_id = %s', [employee_id])[0]
+    cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [emp.citizen_id.citizen_id])[0]
+    user = users.objects.raw('SELECT * FROM users WHERE user_id = %s', [employee_id])[0]
+    return render(request, 'admin/admempdetails.html', {'emp': emp, 'cit': cit, 'user': user})
+
+def employee_list(request):
+    emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees')
+    return render(request, 'admin/employee_list.html', {'employees': emp})
+
+def delete_employee(request, employee_id):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM users WHERE user_id = %s", [employee_id])
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+# class panchayat_employees(models.Model):
+#     employee_id = models.OneToOneField(users, primary_key=True, on_delete=models.CASCADE, db_column='user_id')
+#     citizen_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
+#     role = models.CharField(max_length=511)
+#     department = models.CharField(max_length=511)
+class EmployeeUpdateView(UpdateView):
+    model = panchayat_employees
+    fields = ['citizen_id', 'role', 'department']
+    template_name = 'api/generic_form.html'
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        employee_id = self.kwargs['pk']
+        citizen_id = data['citizen_id'].citizen_id if data['citizen_id'] else None
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE panchayat_employees
+                SET  citizen_id = %s,  role = %s, department = %s
+                WHERE employee_id = %s
+            ''', [citizen_id, data['role'], data['department'], employee_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return reverse('adm_employee_detail', kwargs={'employee_id': self.kwargs['pk']})
+    
+class EmpUserUpdateView(UpdateView):
+    model = users
+    fields = ['password_user']
+    template_name = 'api/generic_form.html'
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        user_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE users
+                SET password_user = %s
+                WHERE user_id = %s
+            ''', [data['password_user'], user_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return reverse('adm_employee_detail', kwargs={'employee_id': self.object.user_id})
+
+class EmpCitUpdateView(UpdateView):
+    model = citizen
+    fields = ['name', 'gender', 'dob', 'educational_qualification', 'household_id', 'parent_id', 'income']
+    template_name = 'api/generic_form.html'
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        citizen_id = self.kwargs['pk']
+        household_id = data['household_id'].household_id if data['household_id'] else None
+        parent_id = data['parent_id'].citizen_id if data['parent_id'] else None
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE citizen
+                SET name = %s, gender = %s, dob = %s, 
+                    educational_qualification = %s, household_id = %s, 
+                    parent_id = %s, income = %s
+                WHERE citizen_id = %s
+            ''', [data['name'], data['gender'], data['dob'], data['educational_qualification'],
+                  household_id, parent_id, data['income'], citizen_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE citizen_id = %s', [self.object.citizen_id])[0]
+        return reverse('adm_employee_detail', kwargs={'employee_id': emp.employee_id})

@@ -72,19 +72,19 @@
 
     {% if data %}
         {% for citizen in data %}
-            <div class="citizen-box">
-                <p><strong>Name:</strong> {{ citizen.name }}</p>
-                <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
-                <p><strong>Gender:</strong> {{ citizen.gender }}</p>
-                <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
-                <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
-                <p><strong>Household:</strong> {{ citizen.household_id }}</p>
-                <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
-                
-                <a href="{% url 'members' citizen.household_id %}" class="button">View Household Members</a>
-                <hr>
-                <a href="{% url 'apply_certificate' %}" class="button">Apply for Certificate</a>
-            </div>
+            <p><strong>Name:</strong> {{ citizen.name }}</p>
+            <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
+            <p><strong>Gender:</strong> {{ citizen.gender }}</p>
+            <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
+            <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
+            <p><strong>Household:</strong> {{ citizen.household_id }}</p>
+            <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
+            <a href="{% url 'members' citizen.household_id %}">View Household Members</a>
+            
+            <hr>
+             <a href="{% url 'apply_certificate'%}?citizen_id={{citizen.citizen_id}}">Apply for certificate</a>
+            
+            <hr>
         {% endfor %}
     {% else %}
         <p>No citizen details available.</p>

@@ -95,7 +95,10 @@
         </div>
     </div>
 
-    <h1>Asset Records</h1>
+        <br>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
     
     <ul>
         {% for emp in asset_records %}
@@ -121,5 +124,10 @@
     <br>
     <a href="{% url 'home' %}">Back to Home</a>
 
+        <br>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
+    
 </body>
 </html>

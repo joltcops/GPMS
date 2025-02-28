@@ -1,54 +1,112 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    {% load static %} 
-    <link rel="stylesheet" href="../static/styles/login_page.css">
+    <title>Agriculture - Land Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .topbar {
+            background: #333;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        .topbar-left {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: red;
+        }
+
+        .topbar-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 1.1em;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: red;
+            text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #333;
+            padding: 15px;
+            margin: 10px auto;
+            width: 50%;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.5);
+            font-size: 1.2em;
+            text-align: left;
+        }
+
+        p {
+            margin: 10px;
+        }
+
+        strong {
+            color: red;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background: red;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            background: darkred;
+        }
+    </style>
 </head>
 <body>
+
     <!-- Topbar -->
     <div class="topbar">
-
-        
         <div class="topbar-left">GPMS</div>
         <div class="topbar-right">
-            <a href="../">Home</a>
+            <a href="{% url 'home' %}">Home</a>
             <a href="#">About</a>
             <a href="#">Contact</a>
         </div>
     </div>
 
-    <!-- Login Form -->
-    <h1>Login</h1>
-    <form id="loginForm" method="post" action="{% url 'citizen_list' %}">
-        {% csrf_token %}
+    <h1>Land Records</h1>
 
-        <!-- User ID Field -->
-        <label for="userid">User ID:</label>
-        <input type="text" id="userid" name="userid" placeholder="Enter your User ID" required>
-        <br><br>
+    <ul>
+        {% for lands in land_records %}
+            <li>
+                <p><strong>Crop Type:</strong> {{ lands.0 }}</p>
+                <p><strong>Area:</strong> {{ lands.1 }}</p>
+            </li>
+        {% endfor %}
+    </ul>
 
-        <!-- Role Dropdown -->
-        <label for="role">Role:</label>
-        <select id="role" name="role" required>
-            <option value="" disabled selected>Select your role</option>
-            <option value="Admin">Admin</option>
-            <option value="Employee">Employee</option>
-            <option value="Citizen">Citizen</option>
-            <option value="Monitor">Monitor</option>
-        </select>
-        <br><br>
+    <a href="{% url 'home' %}">Back to Home</a>
 
-        <!-- Password Field -->
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" placeholder="Enter your password" required>
-        <br><br>
-
-        <!-- Submit Button -->
-        <button type="submit">Login</button>
-    </form>
 </body>
 </html>

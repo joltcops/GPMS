@@ -52,3 +52,10 @@ class CensusYearForm(forms.Form):
 
 class CensusPopForm(forms.Form):
     date_pop = forms.DateField()
+
+class SchemeDateForm(forms.Form):
+    start_date = forms.DateField()
+    end_date = forms.DateField()
+
+class SchemeNameForm(forms.Form):
+    name = forms.CharField()

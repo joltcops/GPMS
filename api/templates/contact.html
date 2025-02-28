@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: red;
+            text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background: red;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Contact Us</h1>
+    <p>Pracheta Saha: (+91)9163676995</p>
+    <p>Gayathri Anant: (+91)9481287032</p>
+    <p>Ankita Mishra: (+91)6203512332</p>
+    <p>Vaasu Singla: (+91)9084786199</p>
+    <p>Arudeep Kumar: (+91)9572053263</p>
+
+    <a href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

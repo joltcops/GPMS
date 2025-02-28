@@ -5,17 +5,20 @@
 </head>
 <body>
     <h1>Welcome to the Citizen Management System</h1>
-    <a href="{% url 'census_data_login' %}">
+    <a href="{% url 'show_general_census' %}">
         <button>View Census Details</button>
     </a>
     <a href="{% url 'general_env' %}">
         <button>View Environment Details</button>
     </a>
     <a href="{% url 'infrastructure_data' %}">
-        <button>View Infrastructal Details</button>
+        <button>View Infrastructural Details</button>
     </a>
-    <a href="{% url 'agriculture_data_login' %}">
+    <a href="{% url 'agriculture_data' %}">
         <button>View Agricultural Details</button>
+    </a>
+    <a href="{% url 'schemes' %}">
+        <button>View Scheme Details</button>
     </a>
 </body>
 </html>

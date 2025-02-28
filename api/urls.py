@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path('', views.home_page, name = 'home'),
+    path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
     path('add-citizen/', views.add_citizen, name = 'add_citizen'),
     path("citizens/<str:fields>/", views.get_citizens),
     path("citizens/", views.getcitizens),
@@ -13,6 +15,9 @@ urlpatterns = [
     path('citizenslist/', views.citizen_list, name='citizen_list'),
     path('citizenlist/<str:citizen_id>/', views.citizen_detail, name='citizen_detail'),
     path('schemes/', views.getschemes, name = 'schemes'),
+    path('schemes_gen/', views.getschemes_gen, name = 'schemes_gen'),
+    path('show_date_scheme/', views.show_date_scheme, name = 'show_date_scheme'),
+    path('show_stat_scheme/', views.show_stat_scheme, name = 'show_stat_scheme'),
     path('panchayat_details/',views.panchayat_details,name='panchayat_details'),
     path('environment_data/',views.environment_data,name='environment_data'),
     path('infrastructure_data/',views.infrastructure_data,name='infrastructure_data'),

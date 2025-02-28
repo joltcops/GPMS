@@ -4,20 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>General Environmental Data</title>
+    {% load static %}
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #222;
             color: white;
             text-align: center;
-            padding: 40px;
+            padding: 50px;
+        }
+
+        .topbar {
+            background: #333;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(255, 0, 0, 0.4);
+        }
+
+        .topbar-left {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: red;
+        }
+
+        .topbar-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 1.1em;
         }
 
         h2 {
             font-size: 2em;
             margin-bottom: 20px;
-            color: red;
-            text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.3);
         }
 
         table {
@@ -49,7 +71,7 @@
             color: red;
         }
 
-        button {
+        button, a {
             background: red;
             color: white;
             padding: 10px 20px;
@@ -59,30 +81,24 @@
             margin: 15px;
             cursor: pointer;
             transition: 0.3s;
-        }
-
-        button:hover {
-            background: darkred;
-        }
-
-        a {
-            display: inline-block;
-            margin-top: 20px;
             text-decoration: none;
-            background: red;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 1.2em;
-            transition: 0.3s;
+            display: inline-block;
         }
 
-        a:hover {
+        button:hover, a:hover {
             background: darkred;
         }
     </style>
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">Environmental Data</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
 
     <h2>Average Environmental Data</h2>
 
@@ -136,6 +152,5 @@
     </form>
 
     <a href="{% url 'home' %}">Back to Home</a>
-
 </body>
 </html>

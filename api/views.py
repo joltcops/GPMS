@@ -8,12 +8,16 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CertificateForm, CensusDateForm, CensusYearForm, CensusPopForm
+from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CertificateForm, CensusDateForm, CensusYearForm, CensusPopForm, SchemeDateForm, SchemeNameForm
 from datetime import date
 from django.http import HttpResponse
 
+def about(request):
+    return render(request, 'about.html')
 
-count_benefit=3
+def contact(request):
+    return render(request, 'contact.html')
+
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -33,6 +37,45 @@ def getcitizens(request):
 def getschemes(request):
     schemes=welfare_schemes.objects.all()
     return render(request, 'schemes.html', {'schemes': schemes})
+
+def getschemes_gen(request):
+    schemes=welfare_schemes.objects.all()
+    return render(request, 'schemes_gen.html', {'schemes': schemes})
+
+def show_date_scheme(request):
+    form = SchemeDateForm()
+    records = None
+
+    if request.method == 'POST':
+        form = SchemeDateForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT welfare_schemes.name, COUNT(*) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON scheme_enrollments.scheme_id = welfare_schemes.scheme_id WHERE enrollment_date>=%s AND enrollment_date<=%s GROUP BY welfare_schemes.name;", [start_date, end_date])
+                records = cursor.fetchall()
+
+    return render(request, "show_date_scheme.html", {"form":form, "records":records})
+
+def show_stat_scheme(request):
+    form = SchemeNameForm()
+    records = None
+    edu = None
+
+    if request.method == 'POST':
+        form = SchemeNameForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*), AVG(income) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON welfare_schemes.scheme_id = scheme_enrollments.scheme_id WHERE welfare_schemes.name = %s;", [name])
+                records = cursor.fetchall()
+
+                cursor.execute("SELECT welfare_schemes.name, citizen.educational_qualification, COUNT(*) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON welfare_schemes.scheme_id = scheme_enrollments.scheme_id WHERE welfare_schemes.name = %s GROUP BY welfare_schemes.name, citizen.educational_qualification;", [name])
+                edu = cursor.fetchall()
+
+    return render(request, "show_stat_scheme.html", {"form":form, "records":records, "edu":edu})
 
 @api_view(['POST'])
 def addcitizen(request):
@@ -196,9 +239,6 @@ def environment_data(request):
 
 # def infrastructure_data(request):
 #     return render(request, 'infrastructure_data.html')
-
-# def agriculture_data(request):
-#     return render(request, 'agriculture_data.html')
 
 # def login_page(request):
 #     return render(request, 'login_page.html')
@@ -510,7 +550,10 @@ def environment_data_login(request):
     return render(request, 'environment_data_login.html')
 
 def agriculture_data_login(request):
-    return render(request, 'agriculture_data_login.html')
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT crop_type, SUM(area_acres) FROM land_records GROUP BY crop_type")
+        results = cursor.fetchall()
+    return render(request, 'agriculture_data_login.html', {'land_records':results})
 
 def infrastructure_data_login(request):
     return render(request, 'infrastructure_data_login.html')

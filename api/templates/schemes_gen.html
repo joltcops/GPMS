@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infrastructure Report</title>
-    {% load static %}
+    <title>Welfare Schemes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #222;
             color: white;
             text-align: center;
-            padding: 50px;
+            padding: 40px;
         }
 
         .topbar {
@@ -36,40 +35,35 @@
             font-size: 1.1em;
         }
 
-        h2 {
-            font-size: 2em;
+        h1 {
+            font-size: 2.5em;
+            color: red;
+            text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);
             margin-bottom: 20px;
-            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.3);
         }
 
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
             background: #333;
-            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.4);
+            padding: 15px;
+            margin: 10px auto;
+            width: 50%;
             border-radius: 10px;
-            overflow: hidden;
-        }
-
-        th, td {
-            border: 1px solid red;
-            padding: 12px;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.5);
+            font-size: 1.2em;
             text-align: left;
-            color: white;
         }
 
-        th {
-            background-color: red;
-            color: white;
+        p {
+            margin: 10px;
         }
 
-        tr:nth-child(even) {
-            background-color: #444;
-        }
-
-        tr:hover {
-            background-color: #555;
+        strong {
+            color: red;
         }
 
         a {
@@ -101,28 +95,16 @@
         </div>
     </div>
 
-    <h2>Infrastructure Report</h2>
+    <h1>Welfare Schemes</h1>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Location</th>
-                <th>Count</th>
-                <th>Total Budget</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for asset in asset_records %}
-            <tr>
-                <td>{{ asset.0 }}</td>
-                <td>{{ asset.1 }}</td>
-                <td>{{ asset.2 }}</td>
-                <td>{{ asset.3 }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <ul>
+        {% for scheme in schemes %}
+            <li>
+                <p><strong>Name:</strong> {{ scheme.name }}</p>
+                <p><strong>Description:</strong> {{ scheme.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
 
     <a href="{% url 'home' %}">Back to Home</a>
 

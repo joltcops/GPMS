@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include  # Import include
 from . import views
-from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUpdateView,UserUpdateView, AssetUpdateView,SchemeUpdateView,CenUpdateView
+from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUpdateView,UserUpdateView, AssetUpdateView,SchemeUpdateView,CenUpdateView, HouseUpdateView, EnvUpdateView
 
 urlpatterns = [
     path('', views.home_page, name = 'home'),
@@ -23,10 +23,15 @@ urlpatterns = [
     path('land/edit/<str:pk>/', LandUpdateView.as_view(), name='land_edit'),
     path('addland/<str:citizen_id>/', views.add_land, name='add_land'),
     path('addassets/',views.add_assets,name='add_assets'),
+    path('addtax/<str:citizen_id>/',views.add_tax,name='add_tax'),
+    path('addenv/',views.add_env,name='add_env'),
+    path('addhouse/',views.add_house,name='add_house'),
     path('addwelfareschemes/',views.add_welfare_schemes,name='add_welfare_schemes'),
     path('user/edit/<str:pk>/', UserUpdateView.as_view(), name='user_edit'),
     path('addvaccine/<str:citizen_id>/', views.add_vaccine, name='add_vaccine'),
     path('assets_list/', views.assetslist, name='assetslist'),
+    path('houselist/', views.house_list, name='house_list'),
+    path('envlist/', views.env_list, name='env_list'),
     path('delete-land/<str:land_id>/', views.delete_land, name='delete_land'),
     path('delete-vaccine/<str:vaccination_id>/', views.delete_vaccine, name='delete_vaccine'),
     path('delete-citizen/<str:citizen_id>/', views.delete_citizen, name='delete_citizen'),
@@ -34,6 +39,8 @@ urlpatterns = [
     path('delete-scheme/<str:scheme_id>/', views.delete_scheme, name='delete_scheme'),
     path('delete-cen/<str:cen_id>/', views.delete_cen, name='delete_cen'),
     path('asset/edit/<str:pk>/', AssetUpdateView.as_view(), name='asset_edit'),
+    path('env/edit/<str:pk>/', EnvUpdateView.as_view(), name='env_edit'),
+    path('house/edit/<str:pk>/', HouseUpdateView.as_view(), name='house_edit'),
     path('scheme/edit/<str:pk>/', SchemeUpdateView.as_view(), name='scheme_edit'),
     path('cen/edit/<str:pk>/', CenUpdateView.as_view(), name='cen_edit'),
     path('census_data_list/', views.census_data_list, name='census_data_list'),

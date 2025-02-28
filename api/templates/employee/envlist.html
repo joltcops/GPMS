@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Env List</title>
+</head>
+<body>
+    <h1>Environment Records</h1>
+    <a href="{% url 'add_env' %}">Add</a>
+    <ul>
+    {% for rec in env %}
+        <li>
+                (ID: {{ rec.record_id }}) (Rainfall: {{ rec.rainfall }}) (AQI: {{ rec.aqi }}) (Groundwater Level: {{ rec.gwl }}) (Date recorded: {{ rec.date_of_record }}) (Wind speed: {{ rec.wind_speed }}) (Temperature: {{ rec.temperature }}) (Humidity: {{ rec.humidity }})
+            </a>
+            <a href="{% url 'env_edit' rec.record_id %}" class="btn btn-warning">Edit</a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

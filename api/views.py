@@ -2,18 +2,19 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import citizenSerializer
-from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, census_data
+from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, census_data, env_data
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.db import connection
 from django.http import HttpResponseRedirect
+from datetime import date
 
 def add_citizen(request):
     if request.method == 'POST':
@@ -125,7 +126,10 @@ def empcitdetails(request, citizen_id):
     vac = vaccinations.objects.raw('SELECT * FROM vaccinations WHERE citizen_id = %s', [citizen_id])
     user = users.objects.raw('SELECT * FROM users join citizen ON users.user_id = citizen.citizen_id WHERE citizen.citizen_id = %s', [citizen_id])[0]
     members = citizen.objects.raw('SELECT * FROM citizen WHERE household_id = (SELECT household_id from citizen where citizen_id = %s)', [citizen_id])
-    return render(request, 'employee/empcitdetails.html', {'citizen': citi, 'household': house, 'land': land, 'senroll': senroll, 'vaccinations': vac, 'user': user, 'members': members})
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM tax WHERE payer_id = %s', [citizen_id])
+        taxes = cursor.fetchall()
+    return render(request, 'employee/empcitdetails.html', {'citizen': citi, 'household': house, 'land': land, 'senroll': senroll, 'vaccinations': vac, 'user': user, 'members': members, 'taxes': taxes})
 
 class CitizenUpdateView(UpdateView):
     model = citizen
@@ -411,3 +415,112 @@ def census_data_list(request):
 def welfare_schemes_list(request):
     schemes = welfare_schemes.objects.raw('SELECT * FROM welfare_schemes')
     return render(request, 'employee/welfare_schemes_list.html', {'schemes': schemes})
+
+class EnvUpdateView(UpdateView):
+    model = env_data
+    fields = ['rainfall', 'aqi', 'gwl', 'date_of_record', 'temperature', 'humidity', 'wind_speed']
+    template_name = 'api/generic_form.html'
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        record_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE env_data
+                SET rainfall = %s, aqi = %s, gwl = %s, 
+                    date_of_record = %s, temperature = %s, 
+                    humidity = %s, wind_speed = %s
+                WHERE record_id = %s
+            ''', [data['rainfall'], data['aqi'], data['gwl'], data['date_of_record'],
+                  data['temperature'], data['humidity'], data['wind_speed'], record_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return reverse('env_list')
+    
+class HouseUpdateView(UpdateView):
+    model = household
+    fields = ['address', 'category', 'income']
+    template_name = 'api/generic_form.html'
+    
+    def form_valid(self, form):
+        data = form.cleaned_data
+        household_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE household
+                SET address = %s, category = %s, income = %s
+                WHERE household_id = %s
+            ''', [data['address'], data['category'], data['income'], household_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return reverse('house_list')
+
+    
+def add_tax(request, citizen_id):
+    if request.method == 'POST':
+        form = TaxForm(request.POST)
+        if form.is_valid():
+            tax_id = form.cleaned_data['tax_id']
+            payer_id = citizen_id
+            type = form.cleaned_data['type']
+            amount = form.cleaned_data['amount']
+            due_date = form.cleaned_data['due_date']
+            paid_status = form.cleaned_data['paid_status']
+            print("Form is valid")
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO tax (tax_id, payer_id, type, amount, due_date, paid_status) VALUES (%s, %s, %s, %s, %s, %s)", [tax_id, payer_id, type, amount, due_date, paid_status])
+            form = TaxForm()
+    else:
+        form = TaxForm()
+    return render(request, 'employee/addtax.html', {'form': form})
+
+def env_list(request):
+    env = env_data.objects.raw('SELECT * FROM env_data')
+    return render(request, 'employee/envlist.html', {'env': env})
+
+def house_list(request):
+    houses = household.objects.raw('SELECT * FROM household')
+    return render(request, 'employee/houses.html', {'houses': houses})
+
+def add_env(request):
+    if request.method == 'POST':
+        form = EnvForm(request.POST)
+        if form.is_valid():
+            record_id = form.cleaned_data['record_id']
+            rainfall = form.cleaned_data['rainfall']
+            aqi = form.cleaned_data['aqi']
+            gwl = form.cleaned_data['gwl']
+            date_of_record = form.cleaned_data['date_of_record']
+            temperature = form.cleaned_data['temperature']
+            humidity = form.cleaned_data['humidity']
+            wind_speed = form.cleaned_data['wind_speed']
+            print("Form is valid")
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO env_data (record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", [record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed])
+            form = EnvForm()
+    else:
+        form = EnvForm()
+    return render(request, 'employee/addenv.html', {'form': form})
+
+def add_house(request):
+    if request.method == 'POST':
+        form = HouseForm(request.POST)
+        if form.is_valid():
+            household_id = form.cleaned_data['household_id']
+            address = form.cleaned_data['address']
+            category = form.cleaned_data['category']
+            income = form.cleaned_data['income']
+            print("Form is valid")
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO household (household_id, address, category, income) VALUES (%s, %s, %s, %s)", [household_id, address, category, income])
+            form = HouseForm()
+    else:
+        form = HouseForm()
+    return render(request, 'employee/addhouse.html', {'form': form})

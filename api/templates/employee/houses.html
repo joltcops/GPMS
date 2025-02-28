@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Households</title>
+</head>
+<body>
+    <h1>Households</h1>
+    <a href="{% url 'add_house' %}">Add</a>
+    <ul>
+    {% for house in houses %}
+        <li>
+                (Household: {{ house.household_id }}) (Address: {{ house.address }}) (Category: {{ house.category }}) (Household income: {{ house.income }})
+            </a>
+            <a href="{% url 'house_edit' house.household_id %}" class="btn btn-warning">Edit</a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

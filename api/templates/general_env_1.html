@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>General Environmental Data</title>
+</head>
+<body>
+    <h2>Average Environmental Data</h2>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <table border="1">
+            <tr>
+                <th>Parameter</th>
+                <th>Average Value</th>
+            </tr>
+            <tr>
+                <td>Rainfall</td>
+                <td>{{ data.avg_rainfall|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Air Quality Index (AQI)</td>
+                <td>{{ data.avg_aqi|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Ground Water Level (GWL)</td>
+                <td>{{ data.avg_gwl|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Temperature</td>
+                <td>{{ data.avg_temperature|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Humidity</td>
+                <td>{{ data.avg_humidity|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Wind Speed</td>
+                <td>{{ data.avg_wind_speed|default:"N/A" }}</td>
+            </tr>
+        </table>
+    {% endif %}
+
+    <!-- Button to navigate to show_date_env page -->
+    <br>
+    <a href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

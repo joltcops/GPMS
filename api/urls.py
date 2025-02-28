@@ -23,6 +23,7 @@ urlpatterns = [
     path('login_page/',views.login_page,name='login_page'),
     path('approve_certificate/<int:application_id>/<int:employee_id>/', views.approve_certificate, name='approve_certificate'),
     path('general_env/', views.show_general_env, name = 'general_env'),
+    path('general_env_1/', views.show_general_env_1, name = 'general_env_1'),
     path('show_date_env/', views.show_date_env, name = 'show_date_env'),
     path('show_val_env/', views.show_val_env, name = 'show_val_env'),
     path('show_above_avg_env/', views.show_above_avg_env, name = 'show_above_avg_env'),
@@ -45,5 +46,7 @@ urlpatterns = [
     path('env_data_monitor/', views.env_data_monitor, name = 'env_data_monitor'),
     path('members/<str:household_id>', views.members, name = 'members'),
     path('certificates/<str:citizen_id>', views.certificates, name = 'certificates'),
-    path('apply_certificate/', views.apply_certificate, name = 'apply_certificate')
+    path('apply_certificate/', views.apply_certificate, name = 'apply_certificate'),
+    path('login_view_1/', views.login_view_1, name = 'login_view_1'),
+    path('infra_gen/', views.infra_gen, name = 'infra_gen')
 ]

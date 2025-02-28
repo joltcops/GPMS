@@ -53,16 +53,23 @@
 <body>
 
     <h1>Welcome to the Citizen Management System</h1>
-
-    <div class="container">
-        <a href="{% url 'login_page' %}" class="button">Login</a>
-        <a href="{% url 'panchayat_details' %}" class="button">View Panchayat Details</a>
-        <a href="{% url 'general_env' %}" class="button">View Environment Details</a>
-        <a href="{% url 'infrastructure_data' %}" class="button">View Infrastructural Details</a>
-        <a href="{% url 'agriculture_data' %}" class="button">View Agricultural Details</a>
-        <a href="{% url 'schemes' %}" class="button">View Scheme Details</a>
-        <a href="{% url 'show_general_census' %}" class="button">View Census Details</a>
-    </div>
-
+    <a href="{% url 'login_page' %}">
+        <button>Login</button>
+    </a>
+    <a href="{% url 'panchayat_details' %}">
+        <button>View Panchayat Details</button>
+    </a>
+    <a href="{% url 'general_env_1' %}">
+        <button>View Environment Details</button>
+    </a>
+    <a href="{% url 'infra_gen' %}">
+        <button>View Infrastructal Details</button>
+    </a>
+    <a href="{% url 'agriculture_data' %}">
+        <button>View Agricultural Details</button>
+    </a>
+    <a href="{% url 'schemes' %}">
+        <button>View Scheme Details</button>
+    </a>
 </body>
 </html>

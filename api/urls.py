@@ -46,4 +46,8 @@ urlpatterns = [
     path('census_data_list/', views.census_data_list, name='census_data_list'),
     path('welfare_schemes/', views.welfare_schemes_list, name='welfare_schemes_list'),
     path('addcensusdata/', views.add_census_data, name='add_census_data'),
+    path('certificate_list/', views.view_cert_list, name='certificate_list'),
+    path('benefit_list/', views.view_bene_list, name='benefits_list'),
+    path('certificate_approve/<str:application_id>/', views.certificate_approve, name='certificate_approve'),
+    path('benefit_approve/<str:application_id>/', views.benefit_approve, name='benefit_approve'),
 ]

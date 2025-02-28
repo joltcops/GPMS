@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apply Certificate</title>
+</head>
+<body>
+    <h1>Apply Certificate</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

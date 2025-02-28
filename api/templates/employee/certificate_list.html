@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Certificate List</title>
+</head>
+<body>
+    <h1>Certificate List</h1>
+    <ul>
+    {% for certificate in certificates %}
+        <li>
+                (Application ID: {{ certificate.application_id }}) (Type: {{ certificate.certificate_type }}) (Applicant ID: {{ certificate.citizen_id }})
+            </a>
+            <a href="{% url 'certificate_approve' certificate.application_id %}" class="btn btn-warning">Approve</a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

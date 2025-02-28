@@ -2,13 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import citizenSerializer
-from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, census_data, env_data
+from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, census_data, env_data,benefit_application, certificate_application
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, BenefitForm, CertificateForm,CertificateApprovalForm, BenefitApprovalForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -97,13 +97,80 @@ def mytax(request, citizen_id):
         taxes = cursor.fetchall()
     return render(request, 'citizen/tax.html', {'citizen': citi, 'taxes': taxes})
 
+
 def applycertificate(request, citizen_id):
-    citi = get_object_or_404(citizen, citizen_id=citizen_id)
-    return render(request, 'citizen/apply_cert.html', {'citizen': citi})
+    if request.method == 'POST':
+        form = CertificateForm(request.POST)
+        if form.is_valid():
+            application_id = form.cleaned_data['application_id']
+            certificate_type = form.cleaned_data['certificate_type']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)", [application_id, certificate_type, citizen_id, 'PENDING'])
+            form = CertificateForm()
+    else:
+        form = CertificateForm()
+    return render(request, 'citizen/applycertificate.html', {'form': form})
 
 def applybenefits(request, citizen_id):
-    citi = get_object_or_404(citizen, citizen_id=citizen_id)
-    return render(request, 'citizen/apply_bene.html', {'citizen': citi})
+    if request.method == 'POST':
+        form = BenefitForm(request.POST)
+        if form.is_valid():
+            application_id = form.cleaned_data['application_id']
+            scheme_id = form.cleaned_data['scheme_id']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)", [application_id, citizen_id, scheme_id, 'PENDING'])
+            form = BenefitForm()
+    else:
+        form = BenefitForm()
+    return render(request, 'citizen/apply_benefit.html', {'form': form})
+
+
+def view_cert_list(request):
+    certs = certificate_application.objects.raw('SELECT * FROM certificate_application WHERE status = %s', ['PENDING'])
+    return render(request, 'employee/certificate_list.html', {'certificates': certs})
+
+def certificate_approve(request, application_id):
+    if request.method == 'POST':
+        form = CertificateApprovalForm(request.POST)
+        if form.is_valid():
+            certificate_id = form.cleaned_data['certificate_id']
+            issue_date = form.cleaned_data['issue_date']
+            issuing_official = form.cleaned_data['issuing_official']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO certificate (certificate_id, certificate_type, applicant_id, issue_date, issuing_official) VALUES (%s, (SELECT certificate_type FROM certificate_application WHERE application_id = %s), (SELECT citizen_id FROM certificate_application WHERE application_id = %s), %s, %s)", [certificate_id, application_id, application_id, issue_date, issuing_official])
+            cursor.execute("UPDATE certificate_application SET status = %s WHERE application_id = %s", ['APPROVED', application_id])
+            form = CertificateApprovalForm()
+    else:
+        form = CertificateApprovalForm()
+    return render(request, 'employee/certificate_approve.html', {'form': form})
+# CREATE TABLE scheme_enrollments (
+#     enrollment_id VARCHAR(511),
+#     citizen_id VARCHAR(511),
+#     scheme_id VARCHAR(511),
+#     enrollment_date DATE NOT NULL,
+#     PRIMARY KEY (enrollment_id),
+#     FOREIGN KEY (citizen_id) REFERENCES citizen(citizen_id),
+#     FOREIGN KEY (scheme_id) REFERENCES welfare_schemes(scheme_id)
+# );
+def benefit_approve(request, application_id):
+    if request.method == 'POST':
+        form = BenefitApprovalForm(request.POST)
+        if form.is_valid():
+            enrollment_id = form.cleaned_data['enrollment_id']
+            enrollment_date = form.cleaned_data['enrollment_date']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO scheme_enrollments (enrollment_id, citizen_id, scheme_id, enrollment_date) VALUES (%s, (SELECT citizen_id FROM benefit_application WHERE application_id = %s), (SELECT scheme_id FROM benefit_application WHERE application_id = %s), %s)", [enrollment_id, application_id, application_id, enrollment_date])
+            cursor.execute("UPDATE benefit_application SET status = %s WHERE application_id = %s", ['APPROVED', application_id])
+            form = BenefitApprovalForm()
+    else:
+        form = BenefitApprovalForm()
+    return render(request, 'employee/benefit_approve.html', {'form': form})
+    
+
+def view_bene_list(request):
+    bene = benefit_application.objects.raw('SELECT * FROM benefit_application WHERE status = %s', ['PENDING'])
+    return render(request, 'employee/benefit_list.html', {'benefits': bene})
+
 
 def logout(request):
     return render(request, 'logout.html')

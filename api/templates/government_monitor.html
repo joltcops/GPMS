@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Government_Monitor</title>
+    <title>Government Monitor</title>
 </head>
 <body>
     <h1>Welcome to the Citizen Management System</h1>
+
     <a href="{% url 'census_data_login' %}">
         <button>View Census Details</button>
     </a>
-    <a href="{% url 'general_env' %}">
+
+    {% for user in data %}
+    <a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
         <button>View Environment Details</button>
     </a>
-    <a href="{% url 'infrastructure_data' %}">
-        <button>View Infrastructal Details</button>
+    <a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}">
+        <button>View Infrastructural Details</button>
     </a>
+    {% endfor %}
+
     <a href="{% url 'agriculture_data_login' %}">
         <button>View Agricultural Details</button>
     </a>

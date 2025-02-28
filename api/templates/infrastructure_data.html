@@ -26,7 +26,10 @@
             <button type="submit">Show All Records By Filter</button>
         </form>
 
-        <a href="{% url 'home' %}">Back to Home</a>
+        <br>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
     
 </body>
 </html>

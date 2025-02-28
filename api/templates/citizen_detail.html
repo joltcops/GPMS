@@ -18,7 +18,7 @@
             <a href="{% url 'members' citizen.household_id %}">View Household Members</a>
             
             <hr>
-             <a href="{% url 'apply_certificate'%}">Apply for certificate</a>
+             <a href="{% url 'apply_certificate'%}?citizen_id={{citizen.citizen_id}}">Apply for certificate</a>
             
             <hr>
         {% endfor %}

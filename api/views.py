@@ -204,6 +204,8 @@ def environment_data(request):
 #     return render(request, 'login_page.html')
 
 def show_general_env(request):
+    user_id = request.GET.get("user_id")  # Retrieve user_id from query parameters
+    password = request.GET.get("password")
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature), 
@@ -214,7 +216,7 @@ def show_general_env(request):
 
     # Check if result is None (in case the table is empty)
     if result is None or all(v is None for v in result):
-        return render(request, "general_env_1.html", {"error": "No data available"})
+        return render(request, "general_env_1.html", {"error": "No data available", "user_id": user_id, "password": password})
 
     # Convert the tuple to a dictionary
     data = {
@@ -226,7 +228,8 @@ def show_general_env(request):
         "avg_wind_speed": result[5]
     }
 
-    return render(request, "general_env.html", {"data": data})
+    return render(request, "general_env.html", {"data": data, "user_id": user_id, "password": password})
+
 
 def show_general_env_1(request):
     with connection.cursor() as cursor:
@@ -341,10 +344,12 @@ def environment_data(request):
     return render(request, 'environment_data.html')
 
 def infrastructure_data(request):
+    user_id = request.GET.get("user_id")
+    password = request.GET.get("password")
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT SUM(budget), AVG(budget), MAX(budget), MIN(budget) FROM assets;")
         results = cursor.fetchall()
-    return render(request, 'infrastructure_data.html', {'asset_records':results})
+    return render(request, 'infrastructure_data.html', {'asset_records':results, "user_id":user_id, "password":password})
 
 def show_date_infra(request):
     form = InfraDateForm()
@@ -580,7 +585,13 @@ def login_view(request):
                         citizen_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
                         return render(request, "citizen_detail.html", {"data": citizen_data})
                     elif role_id == 4:
-                        return render(request, "government_monitor.html")
+                        query = """
+                        SELECT * FROM users WHERE user_id = %s;
+                        """
+                        cursor.execute(query, [userid])
+                        columns = [col[0] for col in cursor.description]
+                        monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                        return render(request, "government_monitor.html", {"data": monitor_data})
                     else:
                         return HttpResponse("Access denied for this role.")
                 else:
@@ -619,7 +630,13 @@ def login_view(request):
                         citizen_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
                         return render(request, "citizen_detail.html", {"data": citizen_data})
                     elif role_id == 4:
-                        return render(request, "government_monitor.html")
+                        query = """
+                        SELECT * FROM users WHERE user_id = %s;
+                        """
+                        cursor.execute(query, [userid])
+                        columns = [col[0] for col in cursor.description]
+                        monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                        return render(request, "government_monitor.html", {"data": monitor_data})
                     else:
                         return HttpResponse("Access denied for this role.")
                 else:
@@ -728,16 +745,19 @@ def certificates(request, citizen_id):
     return render(request, 'certificates.html', {"citizen_id": citizen_id})
     
 def apply_certificate(request):
+    citizen_id = request.GET.get("citizen_id")  # Fetch from GET request
+
     if request.method == 'POST':
         form = CertificateForm(request.POST)
+
         if form.is_valid():
             application_id = generate_new_certificate_id()
-            citizen_id = form.cleaned_data['applicant_id']
+            applicant_id = form.cleaned_data['applicant_id']  # Get applicant_id from form
             certificate_type = form.cleaned_data['certificate_type']
 
             # Query citizen using raw SQL
             with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM citizen WHERE citizen_id = %s;", [citizen_id])
+                cursor.execute("SELECT citizen_id FROM citizen WHERE citizen_id = %s;", [citizen_id])
                 row = cursor.fetchone()
 
             if row is None:
@@ -746,7 +766,11 @@ def apply_certificate(request):
 
             citizen_id_inst = row[0]  # Extract the citizen_id
 
-            # Check if the certificate has already been applied
+            # **Check if applicant_id matches citizen_id**
+            if str(applicant_id) != str(citizen_id_inst):  
+                return render(request, 'apply_certificate.html', {'form': form, 'error': 'Applicant ID does not match Citizen ID.'})
+
+            # Check if certificate has already been applied
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT COUNT(*) FROM certificate_application WHERE citizen_id = %s AND certificate_type = %s;",
@@ -761,7 +785,7 @@ def apply_certificate(request):
             with connection.cursor() as cursor:
                 cursor.execute("SELECT password_user FROM users WHERE user_id = %s;", [citizen_id])
                 user_row = cursor.fetchone()
-            
+
             if user_row is None:
                 print("User not found in users table")
                 return render(request, 'apply_certificate.html', {'form': form, 'error': 'User not found'})

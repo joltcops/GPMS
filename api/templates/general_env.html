@@ -53,13 +53,17 @@
         <button type="submit">Show All Records having at least one parameter greater than specified values</button>
     </form>
 
-    <!-- Button to navigate to show_date_env page -->
+    <!-- Button to navigate to show_above_avg_env page -->
     <br>
     <form action="{% url 'show_above_avg_env' %}" method="get">
         <button type="submit">Show All Records with a parameter greater than the average value</button>
     </form>
 
-    <a href="{% url 'home' %}">Back to Home</a>
+    <!-- Back to Login View -->
+    <br>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
 
 </body>
 </html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environmental Data</title>
+</head>
+<body>
+
+    <h2>Filter Environmental Data by Values</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Results:</h3>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Rainfall</th>
+                <th>AQI</th>
+                <th>GWL</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>Wind Speed</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                {% for field in row %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No records found for the selected value range.</p>
+    {% endif %}
+
+</body>
+</html>

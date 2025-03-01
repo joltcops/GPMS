@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/general.css' %}">
+    <title>About Us</title>
+</head>
+<body>
+
+    <div class="nav">
+        <div class="topbar">
+            <div class="topbar-left">GPMS</div>
+            <div class="topbar-right">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'about' %}">About</a>
+                <a href="{% url 'contact' %}">Contact</a>
+            </div>
+        </div>
+    </div>
+
+    <h1>About Us</h1>
+    <p>Hola, we are Team Sunshine, we are a team of third year undergraduate students from the department of Computer Science and Engineering in IIT Kharagpur. This website is a part of our coursework project for the course Database Management Systems Laboratory. Thanks for visiting our page! </p>
+
+    <a class = "apply-button" href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

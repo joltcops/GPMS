@@ -1,12 +1,12 @@
 html {
     font-family: 'Arial', sans-serif;
-    background-color: antiquewhite;
-    color: #333;
+    background-color: cadetblue;
+    color: aliceblue;
 }
 
 .topbar {
-    background-color: #333;
-    color: antiquewhite;
+    background-color: cadetblue;
+    color: aliceblue;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -70,4 +70,286 @@ ul li a:hover {
     background-color: #333;
     color: antiquewhite;
     opacity: 0.9;
+}
+
+.certificate-form-container {
+    width: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    margin: 50px auto;
+}
+
+.certificate-form-container h1 {
+    color: cadetblue;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.certificate-fields p {
+    width: 100%;
+    text-align: left;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.certificate-fields label {
+    font-weight: bold;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.certificate-fields input,
+.certificate-fields select,
+.certificate-fields textarea {
+    width: 90%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.certificate-fields select {
+    cursor: pointer;
+}
+
+.certificate-button {
+    width: 100%;
+    padding: 12px;
+    background-color: darkcyan;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.certificate-button:hover {
+    background-color: rgb(1, 125, 125);
+}
+
+.error-message p{
+    color: black;
+}
+
+/* Citizen List Page Styling */
+.citizen-list-container {
+    width: 60%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    margin: 50px auto;
+}
+
+.citizen-list-container h1 {
+    color: cadetblue;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.citizen-list {
+    list-style: none;
+    padding: 0;
+}
+
+.citizen-list-container {
+    width: 80%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    margin: 50px auto;
+}
+
+/* Table Styling */
+.citizen-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: rgb(80, 104, 104);
+    color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.citizen-table th,
+.citizen-table td {
+    padding: 12px;
+    border: 1px solid aliceblue;
+    text-align: center;
+}
+
+.citizen-table th {
+    background-color: darkcyan;
+    font-size: 18px;
+}
+
+.citizen-table tr:hover {
+    background-color: rgb(1, 125, 125);
+}
+
+/* Delete Button Styling */
+.delete-button {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+    background-color: #e68900;
+}
+
+.citizen-table a{
+    text-decoration: none;
+    color: white;
+}
+
+.citizen-table a:hover{
+    text-decoration: underline;
+}
+
+.citizen-table a:visited{
+    text-decoration: none;
+    color: white;
+}
+
+.container a{
+    text-decoration: none;
+    color: white;
+}
+
+.container a:hover{
+    text-decoration: underline;
+}
+
+.container a:visited{
+    text-decoration: none;
+    color: white;
+}
+
+/* Card Styling */
+.card {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+    color: black;
+}
+
+.card-header {
+    background-color: darkcyan;
+    color: white;
+    padding: 10px;
+    border-radius: 8px 8px 0 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+/* Buttons */
+.btn-warning {
+    background-color: #ff9800;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.btn-warning:hover {
+    background-color: #e68900;
+}
+
+.btn-danger {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.btn-danger:hover {
+    background-color: #c9302c;
+}
+
+/* List Styling */
+.card-body ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.card-body ul li {
+    padding: 10px;
+    background-color: #444;
+    color: white;
+    border-radius: 5px;
+    margin: 5px 0;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.card-body ul li:hover {
+    background-color: #666;
+}
+
+/* Delete Confirmation Modal */
+.delete-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 1000;
+}
+
+.delete-modal p {
+    color: #333;
+    font-size: 16px;
+}
+
+.delete-modal-buttons {
+    margin-top: 15px;
+}
+
+.delete-modal .btn {
+    margin: 5px;
+}
+
+/* Overlay */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }

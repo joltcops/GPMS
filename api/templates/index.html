@@ -1,12 +1,39 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/general.css' %}">
     <title>Home Page</title>
 </head>
 <body>
-    <h1>Welcome to the Citizen Management System</h1>
-    <a href="{% url 'add_citizen' %}">
-        <button>Add Citizen</button>
-    </a>
+
+    <!-- Navigation Links -->
+    <div class="nav">
+        <div class="topbar">
+            <div class="topbar-left">GPMS</div>
+            <div class="topbar-right">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'about' %}">About</a>
+                <a href="{% url 'contact' %}">Contact</a>
+            </div>
+        </div>
+    </div>
+
+    <h1>Welcome to Gram Panchayat Management System</h1>
+
+    <div class="container">
+        <ul>
+        <li> <a href="{% url 'login_page' %}" class="button">Login</a> </li>
+        <li> <a href="{% url 'panchayat_details' %}" class="button">View Panchayat Details</a> </li>
+        <li><a href="{% url 'general_env_1' %}" class="button">View Environment Details</a></li>
+            <li><a href="{% url 'infra_gen' %}" class="button">View Infrastructural Details</a></li>
+                <li><a href="{% url 'agriculture_data_login' %}" class="button">View Agricultural Details</a></li>
+                    <li><a href="{% url 'schemes_gen' %}" class="button">View Scheme Details</a></li>
+    </ul>
+    </div>
+
 </body>
 </html>

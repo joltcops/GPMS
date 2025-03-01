@@ -20,21 +20,33 @@
 
     <h1>My Certificates</h1>
 
-    <div>
-        {% for certificate in certificates %}
-            <div class="certificate-box">
-                <p><strong>Certificate ID:</strong> {{ certificate.0 }}</p>
-                <p><strong>Certificate Type:</strong> {{ certificate.1 }}</p>
-                <p><strong>Issued Date:</strong> {{ certificate.3 }}</p>
-                <p><strong>Issued By:</strong> {{ certificate.4 }}</p>
-            </div>
-        {% endfor %}
+    <div class="certificate-container">
+        <table class="certificate-table">
+            <thead>
+                <tr>
+                    <th>Certificate ID</th>
+                    <th>Certificate Type</th>
+                    <th>Issued Date</th>
+                    <th>Issued By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for certificate in certificates %}
+                <tr>
+                    <td>{{ certificate.0 }}</td>
+                    <td>{{ certificate.1 }}</td>
+                    <td>{{ certificate.3 }}</td>
+                    <td>{{ certificate.4 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
     <!-- Dropdown form for selecting certificate type -->
-    <form action="{% url 'apply_certificate' citizen.citizen_id %}" method="POST">
+    <form action="{% url 'apply_certificate' citizen.citizen_id %}" method="POST" class="certificate-form">
         {% csrf_token %}
-        <label for="certificate_type">To Apply for Certificates select type here:</label>
+        <label for="certificate_type" class="certificate-label">To Apply for Certificates select type here:</label>
         <select name="certificate_type" id="certificate_type" class="certificate-dropdown">
             <option value="select">Select</option>
             <option value="INCOME CERTIFICATE">Income Certificate</option>
@@ -42,6 +54,13 @@
             <option value="LAND OWNERSHIP CERTIFICATE">Land Ownership Certificate</option>
             <option value="BIRTH CERTIFICATE">Birth Certificate</option>
         </select>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <button type="submit" class="apply-button">Apply</button>
     </form>
 

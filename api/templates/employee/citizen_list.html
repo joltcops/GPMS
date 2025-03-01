@@ -1,20 +1,38 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Citizen List</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Citizen List</h1>
-    <ul>
-    {% for citizen in citizens %}
-        <li>
-            <a href="{% url 'emp_citizen_detail' citizen.citizen_id %}">
-                {{ citizen.name }} (ID: {{ citizen.citizen_id }})
-            </a>
-            <button onclick="confirmDelete('{{ citizen.citizen_id }}', '{{ citizen.name }}')">Delete</button>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Citizen List</h1>
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for citizen in citizens %}
+                    <tr>
+                        <td>{{ citizen.citizen_id }}</td>
+                        <td><a href="{% url 'emp_citizen_detail' citizen.citizen_id %}">{{ citizen.name }}</a></td>
+                        <td>
+                            <button class="delete-button" onclick="confirmDelete('{{ citizen.citizen_id }}', '{{ citizen.name }}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
 
@@ -31,11 +49,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById(`citizen-${citizenId}`).remove();
+                    location.reload(); // Refresh the page after deleting
                 } else {
                     alert('Failed to delete citizen');
                 }
             });
         }
     }
-    </script>
+</script>

@@ -1,0 +1,49 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
+    <title>Welfare Schemes</title>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+        </div>
+    </div>
+
+    <h1>Welfare Schemes</h1>
+
+    <div class="certificate-container">
+        <table class="certificate-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scheme in schemes %}
+                <tr>
+                    <td>{{ scheme.name }}</td>
+                    <td>{{ scheme.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="button-container">
+        <form action="{% url 'home' %}" method="GET" class="certificate-form">
+            <button type="submit" class="apply-button">Back to Home</button>
+        </form>
+    </div>
+
+</body>
+</html>

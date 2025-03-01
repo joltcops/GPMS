@@ -1,18 +1,38 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Benefits List</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Benefits List</h1>
-    <ul>
-    {% for benefit in benefits %}
-        <li>
-                (Application ID: {{ benefit.application_id }}) (Scheme ID: {{ benefit.scheme_id }}) (Applicant ID: {{ benefit.citizen_id }})
-            </a>
-            <a href="{% url 'benefit_approve' benefit.application_id %}" class="btn btn-warning">Approve</a>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Benefits List</h1>
+
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Scheme ID</th>
+                    <th>Applicant ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for benefit in benefits %}
+                    <tr id="benefit-{{ benefit.application_id }}">
+                        <td>{{ benefit.application_id }}</td>
+                        <td>{{ benefit.scheme_id }}</td>
+                        <td>{{ benefit.citizen_id }}</td>
+                        <td>
+                            <a href="{% url 'benefit_approve' benefit.application_id %}" class="edit-button">Approve</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>

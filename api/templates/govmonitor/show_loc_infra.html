@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastructure Data</title>
+</head>
+<body>
+    <h2>Filter Infrastructure Data by Filter</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Results:</h3>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Installation Date</th>
+                <th>Budget</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                {% for field in row %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>Budget Summary:</h3>
+        <p><strong>Average Budget:</strong> {{ avg_budget }}</p>
+        <p><strong>Total Budget:</strong> {{ sum_budget }}</p>
+    {% else %}
+        <p>No records found for the selected date range.</p>
+    {% endif %}
+</body>
+</html>

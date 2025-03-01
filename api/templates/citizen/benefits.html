@@ -1,4 +1,4 @@
-{%load static%}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -17,19 +17,34 @@
             <a href="{% url 'logout' %}">Logout</a>
         </div>
     </div>
+
     <h1>My Benefits</h1>
 
-    <div>
-        {% for scheme in schemes %}
-            <div class="certificate-box">
-                <p><strong>Enrollment ID:</strong> {{ scheme.enrollment_id }}</p>
-                <p><strong>Scheme:</strong> {{ scheme.scheme_id }}</p>
-                <p><strong>Enrollment Date:</strong> {{ scheme.enrollment_date }}</p>
-            </div>
-        {% endfor %}
+    <div class="certificate-container">
+        <table class="certificate-table">
+            <thead>
+                <tr>
+                    <th>Enrollment ID</th>
+                    <th>Scheme</th>
+                    <th>Enrollment Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scheme in schemes %}
+                <tr>
+                    <td>{{ scheme.enrollment_id }}</td>
+                    <td>{{ scheme.scheme_id }}</td>
+                    <td>{{ scheme.enrollment_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    
-    <a href="{% url 'apply_benefits' citizen.citizen_id %}" class="apply-button">Apply for New Benefit</a>
-    
+
+    <!-- Apply for New Benefit button -->
+    <form action="{% url 'apply_benefits' citizen.citizen_id %}" method="GET" class="certificate-form">
+        <button type="submit" class="apply-button">Apply for New Benefit</button>
+    </form>
+
 </body>
 </html>

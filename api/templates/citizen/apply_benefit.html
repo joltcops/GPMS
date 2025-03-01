@@ -1,14 +1,36 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Apply Benefit</title>
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
 </head>
 <body>
-    <h1>Apply Benefit</h1>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
-    </form>
+
+    <div class="certificate-form-container">
+        <h1>Apply for a Benefit</h1>
+        <form method="POST">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="error-message">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <!-- Manually styling each field -->
+            <div class="certificate-fields">
+                {% for field in form %}
+                    <p>
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </p>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="certificate-button">Submit</button>
+        </form>
+    </div>
+
 </body>
 </html>

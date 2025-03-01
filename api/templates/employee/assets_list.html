@@ -1,27 +1,52 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Assets List</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Assets List</h1>
-    <a href="{% url 'add_assets' %}">Add</a>
-    <ul>
-    {% for assetitem in assets %}
-        <li>
-                (ID: {{ assetitem.asset_id }}) (Type: {{ assetitem.type }}) (Location: {{ assetitem.location }}) (Installation Date: {{ assetitem.installation_date }}) (Budget: {{ assetitem.budget }})
-            </a>
-            <a href="{% url 'asset_edit' assetitem.asset_id %}" class="btn btn-warning">Edit</a>
-            <button onclick="confirmDelete('{{ assetitem.asset_id }}')">Delete</button>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">  <!-- Keeping the same class for consistency -->
+        <h1>Assets List</h1>
+        <a href="{% url 'add_assets' %}" class="certificate-button">Add Asset</a>
+        <br><br>
+
+        <table class="citizen-table"> <!-- Using the same class for consistent styling -->
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assetitem in assets %}
+                    <tr>
+                        <td>{{ assetitem.asset_id }}</td>
+                        <td>
+                            <a href="{% url 'asset_edit' assetitem.asset_id %}">{{ assetitem.type }}</a>
+                        </td>
+                        <td>{{ assetitem.location }}</td>
+                        <td>
+                            <button class="delete-button" onclick="confirmDelete('{{ assetitem.asset_id }}', '{{ assetitem.type }}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
+
 <script>
-    function confirmDelete(asset_id) {
-        if (confirm(`Are you sure you want to delete ${asset_id}?`)) {
-            fetch(`/api/delete-asset/${asset_id}/`, {
+    function confirmDelete(assetId, assetType) {
+        if (confirm(`Are you sure you want to delete Asset: ${assetType} (ID: ${assetId})?`)) {
+            fetch(`/api/delete-asset/${assetId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}',
@@ -31,11 +56,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById(`asset-${asset_id}`).remove();
+                    location.reload(); // Refresh the page after deleting
                 } else {
-                    
+                    alert('Failed to delete asset');
                 }
             });
         }
     }
-    </script>
+</script>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheme Statistics</title>
+</head>
+<body>
+
+    <h2>View Welfare Scheme Statistics</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">View Statistics</button>
+    </form>
+
+    {% if records %}
+        <h3>Scheme Statistics</h3>
+        <table>
+            <tr>
+                <th>Number of Enrollments</th>
+                <th>Average Income</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                <td>{{ row.0 }}</td>
+                <td>{{ row.1|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No data available for the selected scheme.</p>
+    {% endif %}
+
+    {% if edu %}
+        <h3>Education-wise Enrollment</h3>
+        <table>
+            <tr>
+                <th>Scheme Name</th>
+                <th>Educational Qualification</th>
+                <th>Enrollment Count</th>
+            </tr>
+            {% for row in edu %}
+            <tr>
+                <td>{{ row.0 }}</td>
+                <td>{{ row.1 }}</td>
+                <td>{{ row.2 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
+    <title>Agriculture - Land Records</title>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+        </div>
+    </div>
+
+    <h1>Land Records</h1>
+
+    <div class="certificate-container">
+        <table class="certificate-table">
+            <thead>
+                <tr>
+                    <th>Crop Type</th>
+                    <th>Area</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lands in land_records %}
+                <tr>
+                    <td>{{ lands.0 }}</td>
+                    <td>{{ lands.1|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <form action="{% url 'home' %}" method="GET" class="certificate-form">
+        <button class="apply-button">Back to Home</button>
+    </form>
+
+</body>
+</html>

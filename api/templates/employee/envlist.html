@@ -1,19 +1,79 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Env List</title>
+    <title>Environment Records</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Environment Records</h1>
-    <a href="{% url 'add_env' %}">Add</a>
-    <ul>
-    {% for rec in env %}
-        <li>
-                (ID: {{ rec.record_id }}) (Rainfall: {{ rec.rainfall }}) (AQI: {{ rec.aqi }}) (Groundwater Level: {{ rec.gwl }}) (Date recorded: {{ rec.date_of_record }}) (Wind speed: {{ rec.wind_speed }}) (Temperature: {{ rec.temperature }}) (Humidity: {{ rec.humidity }})
-            </a>
-            <a href="{% url 'env_edit' rec.record_id %}" class="btn btn-warning">Edit</a>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Environment Records</h1>
+        <a href="{% url 'add_env' %}" class="certificate-button">Add Environment Record</a>
+        <br><br>
+
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Rainfall</th>
+                    <th>AQI</th>
+                    <th>Groundwater Level</th>
+                    <th>Date Recorded</th>
+                    <th>Wind Speed</th>
+                    <th>Temperature</th>
+                    <th>Humidity</th>
+                    <th>Actions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in env %}
+                    <tr id="env-{{ rec.record_id }}">
+                        <td>{{ rec.record_id }}</td>
+                        <td>{{ rec.rainfall }}</td>
+                        <td>{{ rec.aqi }}</td>
+                        <td>{{ rec.gwl }}</td>
+                        <td>{{ rec.date_of_record }}</td>
+                        <td>{{ rec.wind_speed }}</td>
+                        <td>{{ rec.temperature }}</td>
+                        <td>{{ rec.humidity }}</td>
+                        <td> 
+                            <button class="delete-button">
+                                <a href="{% url 'env_edit' rec.record_id %}" class="edit-button">Edit</a>
+                            </button>
+                        </td>
+                        <td>
+                            
+                            <button class="delete-button" onclick="confirmDelete('{{ rec.record_id }}')">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
+
+<script>
+    function confirmDelete(recordId) {
+        if (confirm(`Are you sure you want to delete Record ID: ${recordId}?`)) {
+            fetch(`/api/delete-env/${recordId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`env-${recordId}`).remove();
+                } else {
+                    alert('Failed to delete environment record');
+                }
+            });
+        }
+    }
+</script>

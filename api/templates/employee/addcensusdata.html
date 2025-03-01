@@ -3,13 +3,16 @@
 <html>
 <head>
     <title>Add Census Data</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Add Census Data</h1>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
-    </form>
+    <div class="certificate-form-container">
+        <h1>Add Census Data</h1>
+        <form method="POST", class="certificate-fields">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit", class="certificate-button">Submit</button>
+        </form>
+    </div>
 </body>
 </html>

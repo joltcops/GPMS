@@ -139,19 +139,19 @@
 
     <br>
 
-    <form action="{% url 'show_date_env' %}" method="get">
-        <button type="submit">Show All Records Between Two Dates</button>
-    </form>
+    <a href="{% url 'show_date_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
 
-    <form action="{% url 'show_val_env' %}" method="get">
-        <button type="submit">Show Records with at Least One Parameter Above Specified Values</button>
-    </form>
+    <a href="{% url 'show_val_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
 
     <!-- Button to navigate to show_above_avg_env page -->
     <br>
-    <form action="{% url 'show_above_avg_env' %}" method="get">
-        <button type="submit">Show Records with a Parameter Above Average</button>
-    </form>
+    <a href="{% url 'show_above_avg_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
 
     <!-- Back to Login View -->
     <br>

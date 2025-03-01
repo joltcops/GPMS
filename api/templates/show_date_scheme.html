@@ -121,6 +121,7 @@
     {% else %}
         <p>No enrollments found in the selected date range.</p>
     {% endif %}
+    <a href="{% url 'schemes' %}?user_id={{ userid }}&password={{ password }}">Back</a>
 
 </body>
 </html>

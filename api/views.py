@@ -49,6 +49,8 @@ def getschemes_gen(request):
     return render(request, 'schemes_gen.html', {'schemes': schemes})
 
 def show_date_scheme(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = SchemeDateForm()
     records = None
 
@@ -62,9 +64,11 @@ def show_date_scheme(request):
                 cursor.execute("SELECT welfare_schemes.name, COUNT(*) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON scheme_enrollments.scheme_id = welfare_schemes.scheme_id WHERE enrollment_date>=%s AND enrollment_date<=%s GROUP BY welfare_schemes.name;", [start_date, end_date])
                 records = cursor.fetchall()
 
-    return render(request, "show_date_scheme.html", {"form":form, "records":records})
+    return render(request, "show_date_scheme.html", {"form":form, "records":records, "userid":userid, "password":password})
 
 def show_stat_scheme(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = SchemeNameForm()
     records = None
     edu = None
@@ -81,7 +85,7 @@ def show_stat_scheme(request):
                 cursor.execute("SELECT welfare_schemes.name, citizen.educational_qualification, COUNT(*) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON welfare_schemes.scheme_id = scheme_enrollments.scheme_id WHERE welfare_schemes.name = %s GROUP BY welfare_schemes.name, citizen.educational_qualification;", [name])
                 edu = cursor.fetchall()
 
-    return render(request, "show_stat_scheme.html", {"form":form, "records":records, "edu":edu})
+    return render(request, "show_stat_scheme.html", {"form":form, "records":records, "edu":edu, "userid":userid, "password":password})
 
 @api_view(['POST'])
 def addcitizen(request):
@@ -278,6 +282,8 @@ def show_general_env_1(request):
 
 
 def show_date_env(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
     form = EnvDateForm()  # Initialize the form for GET request
     records = None  # Default value for records
 
@@ -295,9 +301,11 @@ def show_date_env(request):
                 
                 records = cursor.fetchall()  # Fetch all matching records
 
-    return render(request, "show_date_env.html", {"form": form, "records": records})
+    return render(request, "show_date_env.html", {"form": form, "records": records, 'userid':userid, 'password':password})
 
 def show_val_env(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
     form = EnvValueForm()  # Initialize the form for GET request
     records = None  # Default value for records
 
@@ -319,9 +327,11 @@ def show_val_env(request):
                 
                 records = cursor.fetchall()  # Fetch all matching records
 
-    return render(request, "show_val_env.html", {"form": form, "records": records})
+    return render(request, "show_val_env.html", {"form": form, "records": records,'userid':userid, 'password':password})
 
 def show_above_avg_env(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
     parameters = {
         "temperature": "Temperature",
         "aqi": "Air Quality Index",
@@ -347,7 +357,7 @@ def show_above_avg_env(request):
                     cursor.execute(f"SELECT * FROM env_data WHERE {selected_param} > %s;", [avg_value])
                     records = cursor.fetchall()
 
-    return render(request, "show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records})
+    return render(request, "show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records,'userid':userid, 'password':password})
 
 
 
@@ -372,6 +382,8 @@ def infrastructure_data(request):
     return render(request, 'infrastructure_data.html', {'asset_records':results, "user_id":user_id, "password":password})
 
 def show_date_infra(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = InfraDateForm()
     records=None
     avg_budget = None
@@ -399,10 +411,12 @@ def show_date_infra(request):
         "form": form, 
         "records": records,
         "avg_budget": avg_budget,
-        "sum_budget": sum_budget
+        "sum_budget": sum_budget,"userid":userid, "password":password
     })
 
 def show_loc_infra(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = InfraLocForm()
     records = None
     avg_budget = None
@@ -439,7 +453,7 @@ def show_loc_infra(request):
         "form": form, 
         "records": records,
         "avg_budget": avg_budget,
-        "sum_budget": sum_budget
+        "sum_budget": sum_budget,"userid":userid, "password":password
     })
 
 
@@ -452,6 +466,8 @@ def agriculture_data(request):
     return render(request, 'agriculture_data.html', {'land_records':results, "user_id":user_id, "password":password})
 
 def show_income_agri(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = AgriIncome()
     records = None
     avg_income = None
@@ -477,10 +493,12 @@ def show_income_agri(request):
         "form": form, 
         "records": records,
         "avg_income": avg_income,
-        "total_income": total_income
+        "total_income": total_income,"userid":userid, "password":password
     })
 
 def show_edu_agri(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = AgriIncome()
     records = []
 
@@ -502,10 +520,12 @@ def show_edu_agri(request):
 
     return render(request, "show_edu_agri.html", {
         "form": form, 
-        "records": records,
+        "records": records,"userid":userid, "password":password
     })
 
 def show_area_agri(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = AgriArea()
     records = []
 
@@ -523,7 +543,7 @@ def show_area_agri(request):
 
     return render(request, "show_area_agri.html", {
         "form": form, 
-        "records": records,
+        "records": records,"userid":userid, "password":password
     })
 
 
@@ -581,6 +601,11 @@ def show_general_census(request):
     return render(request, "show_general_census.html", {"data": data, "user_id":user_id, "password":password})
 
 def census_data_func(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
+    print(userid)
+    print(password)
+    print('hi')
     form = CensusDateForm()
     records = None
 
@@ -594,9 +619,11 @@ def census_data_func(request):
                 cursor.execute("SELECT name, event_type, event_date FROM census_data JOIN citizen ON citizen.citizen_id = census_data.citizen_id WHERE EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s;", [year, month])
                 records = cursor.fetchall()
 
-    return render(request, "census_data.html", {"form":form, "records": records})
+    return render(request, "census_data.html", {"form":form, "records": records, "userid":userid, "password":password})
 
 def census_date_count(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = CensusYearForm()
     records = None
 
@@ -621,9 +648,11 @@ def census_date_count(request):
                 
                 records = cursor.fetchone()  # Fetch as a tuple
 
-    return render(request, "census_date_count.html", {"form": form, "records": records})
+    return render(request, "census_date_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_pop_count(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = CensusPopForm()
     records = None
 
@@ -675,9 +704,11 @@ def census_pop_count(request):
 
                 records = cursor.fetchone()
 
-    return render(request, "census_pop_count.html", {"form": form, "records": records})
+    return render(request, "census_pop_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_edu_count(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = CensusPopForm()
     records = None
 
@@ -706,9 +737,11 @@ def census_edu_count(request):
 
                 records = cursor.fetchall()
 
-    return render(request, "census_edu_count.html", {"form": form, "records": records})
+    return render(request, "census_edu_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_vacc_count(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = CensusPopForm()
     records = None
 
@@ -738,9 +771,11 @@ def census_vacc_count(request):
 
                 records = cursor.fetchall()
 
-    return render(request, "census_vacc_count.html", {"form": form, "records": records})
+    return render(request, "census_vacc_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_income_count(request):
+    userid = request.GET.get("userid")
+    password = request.GET.get("password")
     form = CensusPopForm()
     records = None
 
@@ -771,7 +806,7 @@ def census_income_count(request):
 
                 records = cursor.fetchone()
 
-    return render(request, "census_income_count.html", {"form": form, "records": records})
+    return render(request, "census_income_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 
 def login_view(request):

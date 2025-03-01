@@ -15,49 +15,218 @@ from django.views.decorators.http import require_POST
 from django.db import connection
 from django.http import HttpResponseRedirect
 from datetime import date
+from django.db import IntegrityError, transaction
+from django.contrib import messages
+import re
 
-def generate_new_certapp_id():
-    last_application = certificate_application.objects.order_by('-application_id').first()
-    
-    if last_application:
-        last_id = last_application.application_id  # Example: 'C005'
-        last_num = int(last_id[2:])  # Extract numeric part -> 5
-        new_id = f"AP00{last_num + 1}"  # Increment and format -> 'BR006'
-    else:
-        new_id = "AP001"  # If no records exist, start from 'BR001'
-
-    return new_id
-def generate_new_census_id():
-    last_census = census_data.objects.order_by('-census_id').first()
-    
-    if last_census:
-        last_id = last_census.census_id  # Example: 'C005'
-        last_num = int(last_id[7:])  # Extract numeric part -> 5
-        new_id = f"CENSUS00{last_num + 1}"  # Increment and format -> 'BR006'
-    else:
-        new_id = "CENSUS001"  # If no records exist, start from 'BR001'
-
-    return new_id
-def generate_new_application_id():
-    last_application = benefit_application.objects.order_by('-application_id').first()
-    
-    if last_application:
-        last_id = last_application.application_id  # Example: 'BR005'
-        last_num = int(last_id[3:])  # Extract numeric part -> 5
-        new_id = f"BR00{last_num + 1}"  # Increment and format -> 'BR006'
-    else:
-        new_id = "BR001"  # If no records exist, start from 'BR001'
-
-    return new_id
 def generate_new_citizen_id():
-    last_citizen = citizen.objects.order_by('-citizen_id').first()
-    
-    if last_citizen:
-        last_id = last_citizen.citizen_id  # Example: 'C005'
-        last_num = int(last_id[2:])  # Extract numeric part -> 5
-        new_id = f"C00{last_num + 1}"  # Increment and format -> 'BR006'
-    else:
-        new_id = "C001"  # If no records exist, start from 'BR001'
+    last_applications = citizen.objects.values_list('citizen_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'C00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"C00{max_num + 1}"
+
+    return new_id
+def generate_new_census_data_id():
+    last_applications = census_data.objects.values_list('census_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'CENSUS00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"CENSUS00{max_num + 1}"  
+
+    return new_id
+def generate_new_certificate_application_id():
+    last_applications = certificate_application.objects.values_list('application_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'AP00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"AP00{max_num + 1}"  
+
+    return new_id
+def generate_new_benefit_application_id():
+    last_applications = benefit_application.objects.values_list('application_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'BR00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"BR00{max_num + 1}"  
+
+    return new_id
+def generate_new_certificate_id():
+    last_applications = certificate.objects.values_list('certificate_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'CERT00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"CERT00{max_num + 1}"  
+
+    return new_id
+def generate_new_scheme_enrollments_id():
+    last_applications = scheme_enrollments.objects.values_list('enrollment_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'R00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"R00{max_num + 1}"  
+
+    return new_id
+def generate_new_land_records_id():
+    last_applications = land_records.objects.values_list('land_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'L00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"L00{max_num + 1}"  
+
+    return new_id
+def generate_new_vaccinations_id():
+    last_applications = vaccinations.objects.values_list('vaccination_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'V00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"V00{max_num + 1}"  
+
+    return new_id
+def generate_new_assets_id():
+    last_applications = assets.objects.values_list('asset_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'A00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"A00{max_num + 1}"  
+
+    return new_id
+def generate_new_welfare_schemes_id():
+    last_applications = welfare_schemes.objects.values_list('scheme_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'S00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"S00{max_num + 1}"  
+
+    return new_id
+def generate_new_tax_id():
+    last_applications = tax.objects.values_list('tax_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'T00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"T00{max_num + 1}"  
+
+    return new_id
+def generate_new_env_data_id():
+    last_applications = env_data.objects.values_list('record_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'REC00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"REC00{max_num + 1}"  
+
+    return new_id
+def generate_new_household_id():
+    last_applications = household.objects.values_list('household_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'H00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"H00{max_num + 1}"  
+
+    return new_id
+def generate_new_panchayat_employees_id():
+    last_applications = panchayat_employees.objects.values_list('employee_id', flat=True)
+
+    # Extract numeric part using regex and find the maximum numeric value
+    max_num = 0
+    for app_id in last_applications:
+        match = re.search(r'E00(\d+)', app_id)  # Extract digits after 'AP00'
+        if match:
+            num = int(match.group(1))  # Convert to integer
+            max_num = max(max_num, num)  # Track max numeric value
+
+    # Ensure the format remains AP00X (with two leading zeros before the number)
+    new_id = f"E00{max_num + 1}"  
 
     return new_id
 
@@ -65,48 +234,70 @@ def add_citizen(request):
     if request.method == 'POST':
         form = CitizenForm(request.POST)
         if form.is_valid():
-            household_id = form.cleaned_data['household']
-            parent_id = form.cleaned_data['parent']
-            citizen_id=form.cleaned_data['citizen_id']
-            name=form.cleaned_data['name']
-            gender=form.cleaned_data['gender']
-            dob=form.cleaned_data['dob']
-            educational_qualification=form.cleaned_data['educational_qualification']
-            income=form.cleaned_data['income']
+            try:
+                with transaction.atomic():
+                    household_id = form.cleaned_data['household']
+                    parent_id = form.cleaned_data['parent']
+                    citizen_id = generate_new_citizen_id()
+                    name = form.cleaned_data['name']
+                    gender = form.cleaned_data['gender']
+                    dob = form.cleaned_data['dob']
+                    educational_qualification = form.cleaned_data['educational_qualification']
+                    income = form.cleaned_data['income']
 
+                    user_id = citizen_id
+                    role = "CITIZEN"
+                    password_user = '123456'
 
-            user_id=citizen_id
-            role="CITIZEN"
-            password_user='123456'
-
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)", [user_id, role, password_user])
-            cursor.execute("INSERT INTO citizen (citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", [citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income])
-            
-            print("Form is valid")
-            print(form.cleaned_data)
-
-            form = CitizenForm()
+                    with connection.cursor() as cursor:
+                        cursor.execute("INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)", 
+                                       [user_id, role, password_user])
+                        cursor.execute("INSERT INTO citizen (citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
+                                       [citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income])
+                
+                messages.success(request, 'Citizen added successfully.')
+                form = CitizenForm()  # Reset the form after successful submission
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('citizen_id', 'A citizen with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the citizen. Please try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = CitizenForm()
+    
     return render(request, 'employee/addcitizen.html', {'form': form})
 
 def add_census_data(request):
     if request.method == 'POST':
         form = CensusForm(request.POST)
         if form.is_valid():
-            census_id = form.cleaned_data['census_id']
-            event_type = form.cleaned_data['event_type']
-            event_date = form.cleaned_data['event_date']
-            household_id = form.cleaned_data['household_id']
-            citizen_id = form.cleaned_data['citizen_id']
+            try:
+                with transaction.atomic():
+                    census_id = generate_new_census_data_id()
+                    event_type = form.cleaned_data['event_type']
+                    event_date = form.cleaned_data['event_date']
+                    household_id = form.cleaned_data['household_id']
+                    citizen_id = form.cleaned_data['citizen_id']
 
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO census_data(census_id, household_id, citizen_id, event_type, event_date) VALUES (%s, %s, %s, %s, %s)", [census_id, household_id, citizen_id, event_type, event_date])
-            form = CensusForm()
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO census_data(census_id, household_id, citizen_id, event_type, event_date) VALUES (%s, %s, %s, %s, %s)",
+                            [census_id, household_id, citizen_id, event_type, event_date]
+                        )
+
+                messages.success(request, 'Census data added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('census_id', 'A census record with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the census data. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = CensusForm()
+    
     return render(request, 'employee/addcensusdata.html', {'form': form})
 
 def home_page(request):
@@ -148,67 +339,149 @@ def applycertificate(request, citizen_id):
     if request.method == 'POST':
         form = CertificateForm(request.POST)
         if form.is_valid():
-            application_id = form.cleaned_data['application_id']
-            certificate_type = form.cleaned_data['certificate_type']
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)", [application_id, certificate_type, citizen_id, 'PENDING'])
-            form = CertificateForm()
+            try:
+                with transaction.atomic():
+                    application_id = generate_new_certificate_application_id()
+                    certificate_type = form.cleaned_data['certificate_type']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)",
+                            [application_id, certificate_type, citizen_id, 'PENDING']
+                        )
+
+                messages.success(request, 'Certificate application submitted successfully.')
+                # redirect to path('mycertificate/<str:citizen_id>/', views.mycertificate, name='my_certificates'),
+                # return redirect('my_certificates', citizen_id=citizen_id)  # Redirect to a list of certificates or appropriate page
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('application_id', 'An application with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while submitting the application. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
+        redirect('my_certificates', citizen_id=citizen_id)
     else:
         form = CertificateForm()
+    
     return render(request, 'citizen/applycertificate.html', {'form': form})
 
 def applybenefits(request, citizen_id):
     if request.method == 'POST':
         form = BenefitForm(request.POST)
         if form.is_valid():
-            application_id = form.cleaned_data['application_id']
-            scheme_id = form.cleaned_data['scheme_id']
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)", [application_id, citizen_id, scheme_id, 'PENDING'])
-            form = BenefitForm()
+            try:
+                with transaction.atomic():
+                    application_id = generate_new_benefit_application_id()
+                    scheme_id = form.cleaned_data['scheme_id']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)",
+                            [application_id, citizen_id, scheme_id, 'PENDING']
+                        )
+
+                messages.success(request, 'Benefit application submitted successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('application_id', 'An application with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while submitting the application. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = BenefitForm()
+    
     return render(request, 'citizen/apply_benefit.html', {'form': form})
-
 
 def view_cert_list(request):
     certs = certificate_application.objects.raw('SELECT * FROM certificate_application WHERE status = %s', ['PENDING'])
     return render(request, 'employee/certificate_list.html', {'certificates': certs})
 
+
 def certificate_approve(request, application_id):
     if request.method == 'POST':
         form = CertificateApprovalForm(request.POST)
         if form.is_valid():
-            certificate_id = form.cleaned_data['certificate_id']
-            issue_date = form.cleaned_data['issue_date']
-            issuing_official = form.cleaned_data['issuing_official']
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO certificate (certificate_id, certificate_type, applicant_id, issue_date, issuing_official) VALUES (%s, (SELECT certificate_type FROM certificate_application WHERE application_id = %s), (SELECT citizen_id FROM certificate_application WHERE application_id = %s), %s, %s)", [certificate_id, application_id, application_id, issue_date, issuing_official])
-            cursor.execute("UPDATE certificate_application SET status = %s WHERE application_id = %s", ['APPROVED', application_id])
-            form = CertificateApprovalForm()
+            try:
+                with transaction.atomic():
+                    certificate_id = generate_new_certificate_id()
+                    issue_date = form.cleaned_data['issue_date']
+                    issuing_official = form.cleaned_data['issuing_official']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            INSERT INTO certificate 
+                            (certificate_id, certificate_type, applicant_id, issue_date, issuing_official) 
+                            VALUES (%s, 
+                                    (SELECT certificate_type FROM certificate_application WHERE application_id = %s), 
+                                    (SELECT citizen_id FROM certificate_application WHERE application_id = %s), 
+                                    %s, %s)
+                            """,
+                            [certificate_id, application_id, application_id, issue_date, issuing_official]
+                        )
+                        cursor.execute(
+                            "UPDATE certificate_application SET status = %s WHERE application_id = %s",
+                            ['APPROVED', application_id]
+                        )
+
+                messages.success(request, 'Certificate approved successfully.')
+                return redirect('certificate_list')  # Redirect to a list of certificates or appropriate page
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('certificate_id', 'A certificate with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while approving the certificate. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = CertificateApprovalForm()
-    return render(request, 'employee/certificate_approve.html', {'form': form})
+    
+    return render(request, 'employee/certificate_approve.html', {'form': form, 'application_id': application_id})
 
 def benefit_approve(request, application_id):
     if request.method == 'POST':
         form = BenefitApprovalForm(request.POST)
         if form.is_valid():
-            enrollment_id = form.cleaned_data['enrollment_id']
-            enrollment_date = form.cleaned_data['enrollment_date']
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO scheme_enrollments (enrollment_id, citizen_id, scheme_id, enrollment_date) VALUES (%s, (SELECT citizen_id FROM benefit_application WHERE application_id = %s), (SELECT scheme_id FROM benefit_application WHERE application_id = %s), %s)", [enrollment_id, application_id, application_id, enrollment_date])
-            cursor.execute("UPDATE benefit_application SET status = %s WHERE application_id = %s", ['APPROVED', application_id])
-            form = BenefitApprovalForm()
+            try:
+                with transaction.atomic():
+                    enrollment_id = generate_new_scheme_enrollments_id()
+                    enrollment_date = form.cleaned_data['enrollment_date']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            INSERT INTO scheme_enrollments 
+                            (enrollment_id, citizen_id, scheme_id, enrollment_date) 
+                            VALUES (%s, 
+                                    (SELECT citizen_id FROM benefit_application WHERE application_id = %s), 
+                                    (SELECT scheme_id FROM benefit_application WHERE application_id = %s), 
+                                    %s)
+                            """,
+                            [enrollment_id, application_id, application_id, enrollment_date]
+                        )
+                        cursor.execute(
+                            "UPDATE benefit_application SET status = %s WHERE application_id = %s",
+                            ['APPROVED', application_id]
+                        )
+
+                messages.success(request, 'Benefit application approved successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('enrollment_id', 'An enrollment with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while approving the benefit. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = BenefitApprovalForm()
-    return render(request, 'employee/benefit_approve.html', {'form': form})
     
-
+    return render(request, 'employee/benefit_approve.html', {'form': form, 'application_id': application_id})
+    
 def view_bene_list(request):
     bene = benefit_application.objects.raw('SELECT * FROM benefit_application WHERE status = %s', ['PENDING'])
     return render(request, 'employee/benefit_list.html', {'benefits': bene})
-
 
 def logout(request):
     return render(request, 'logout.html')
@@ -363,40 +636,67 @@ class CenUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('census_data_list')
 
-    
+
 def add_land(request, citizen_id):
     if request.method == 'POST':
         form = LandForm(request.POST)
         if form.is_valid():
-            land_id = form.cleaned_data['land_id']
-            area_acres = form.cleaned_data['area_acres']
-            crop_type = form.cleaned_data['crop_type']
-            cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO land_records (land_id, citizen_id, area_acres, crop_type) VALUES (%s, %s, %s, %s)", [land_id, cit.citizen_id, area_acres, crop_type])
-            form = LandForm()
+            try:
+                with transaction.atomic():
+                    land_id = generate_new_land_records_id()
+                    area_acres = form.cleaned_data['area_acres']
+                    crop_type = form.cleaned_data['crop_type']
+                    
+                    cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO land_records (land_id, citizen_id, area_acres, crop_type) VALUES (%s, %s, %s, %s)",
+                            [land_id, cit.citizen_id, area_acres, crop_type]
+                        )
+
+                messages.success(request, 'Land record added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('land_id', 'A land record with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the land record. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = LandForm()
-    return render(request, 'employee/addland.html', {'form': form})
-
+    
+    return render(request, 'employee/addland.html', {'form': form, 'citizen_id': citizen_id})
 def add_vaccine(request, citizen_id):
     if request.method == 'POST':
         form = VaccineForm(request.POST)
         if form.is_valid():
-            vacc_id = form.cleaned_data['vaccination_id']
-            vacc_type = form.cleaned_data['vaccine_type']
-            data_ad = form.cleaned_data['date_administered']
-            cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO vaccinations (vaccination_id, citizen_id, vaccine_type, date_administered) VALUES (%s, %s, %s, %s)", [vacc_id, cit.citizen_id, vacc_type, data_ad])
-            form = VaccineForm()
+            try:
+                with transaction.atomic():
+                    vacc_id = generate_new_vaccinations_id()
+                    vacc_type = form.cleaned_data['vaccine_type']
+                    data_ad = form.cleaned_data['date_administered']
+                    
+                    cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO vaccinations (vaccination_id, citizen_id, vaccine_type, date_administered) VALUES (%s, %s, %s, %s)",
+                            [vacc_id, cit.citizen_id, vacc_type, data_ad]
+                        )
+
+                messages.success(request, 'Vaccination record added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('vaccination_id', 'A vaccination record with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the vaccination record. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = VaccineForm()
-    return render(request, 'employee/addvaccine.html', {'form': form})
+    
+    return render(request, 'employee/addvaccine.html', {'form': form, 'citizen_id': citizen_id})
 
 @require_POST
 def delete_land(request, land_id):
@@ -429,41 +729,66 @@ def delete_citizen(request, citizen_id):
 def assetslist(request):
     asset = assets.objects.raw('SELECT * FROM assets')
     return render(request, 'employee/assets_list.html', {'assets': asset})
-    
+
 def add_assets(request):
     if request.method == 'POST':
-        form = CensusForm(request.POST)
+        form = AssetsForm(request.POST)
         if form.is_valid():
-            asset_id = form.cleaned_data['asset_id']
-            type = form.cleaned_data['type']
-            location = form.cleaned_data['location']
-            installation_date = form.cleaned_data['installation_date']
-            budget = form.cleaned_data['budget']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO assets (asset_id, type, location, installation_date, budget) VALUES (%s, %s, %s, %s, %s)", [asset_id, type, location, installation_date, budget])
-            form = CensusForm()
+            try:
+                with transaction.atomic():
+                    asset_id = generate_new_assets_id()
+                    type = form.cleaned_data['type']
+                    location = form.cleaned_data['location']
+                    installation_date = form.cleaned_data['installation_date']
+                    budget = form.cleaned_data['budget']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO assets (asset_id, type, location, installation_date, budget) VALUES (%s, %s, %s, %s, %s)",
+                            [asset_id, type, location, installation_date, budget]
+                        )
+
+                messages.success(request, 'Asset added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('asset_id', 'An asset with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the asset. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
-        form = CensusForm()
+        form = AssetsForm()
+    
     return render(request, 'employee/addassets.html', {'form': form})
 
 def add_welfare_schemes(request):
     if request.method == 'POST':
         form = WelfareForm(request.POST)
         if form.is_valid():
-            scheme_id = form.cleaned_data['scheme_id']
-            name = form.cleaned_data['name']
-            description = form.cleaned_data['description']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO welfare_schemes (scheme_id, name, description) VALUES (%s, %s, %s)", [scheme_id, name, description])
-            form = WelfareForm()
+            try:
+                with transaction.atomic():
+                    scheme_id = generate_new_welfare_schemes_id()
+                    name = form.cleaned_data['name']
+                    description = form.cleaned_data['description']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO welfare_schemes (scheme_id, name, description) VALUES (%s, %s, %s)",
+                            [scheme_id, name, description]
+                        )
+
+                messages.success(request, 'Welfare scheme added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('scheme_id', 'A welfare scheme with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the welfare scheme. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = WelfareForm()
+    
     return render(request, 'employee/addwelfareschemes.html', {'form': form})
-
 
 @require_POST
 def delete_asset(request, asset_id):
@@ -564,25 +889,37 @@ class HouseUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('house_list')
 
-    
 def add_tax(request, citizen_id):
     if request.method == 'POST':
         form = TaxForm(request.POST)
         if form.is_valid():
-            tax_id = form.cleaned_data['tax_id']
-            payer_id = citizen_id
-            type = form.cleaned_data['type']
-            amount = form.cleaned_data['amount']
-            due_date = form.cleaned_data['due_date']
-            paid_status = form.cleaned_data['paid_status']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO tax (tax_id, payer_id, type, amount, due_date, paid_status) VALUES (%s, %s, %s, %s, %s, %s)", [tax_id, payer_id, type, amount, due_date, paid_status])
-            form = TaxForm()
+            try:
+                with transaction.atomic():
+                    tax_id = generate_new_tax_id()
+                    payer_id = citizen_id
+                    type = form.cleaned_data['type']
+                    amount = form.cleaned_data['amount']
+                    due_date = form.cleaned_data['due_date']
+                    paid_status = form.cleaned_data['paid_status']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO tax (tax_id, payer_id, type, amount, due_date, paid_status) VALUES (%s, %s, %s, %s, %s, %s)",
+                            [tax_id, payer_id, type, amount, due_date, paid_status]
+                        )
+
+                messages.success(request, 'Tax record added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('tax_id', 'A tax record with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the tax record. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = TaxForm()
-    return render(request, 'employee/addtax.html', {'form': form})
+    
+    return render(request, 'employee/addtax.html', {'form': form, 'citizen_id': citizen_id})
 
 def env_list(request):
     env = env_data.objects.raw('SELECT * FROM env_data')
@@ -596,59 +933,98 @@ def add_env(request):
     if request.method == 'POST':
         form = EnvForm(request.POST)
         if form.is_valid():
-            record_id = form.cleaned_data['record_id']
-            rainfall = form.cleaned_data['rainfall']
-            aqi = form.cleaned_data['aqi']
-            gwl = form.cleaned_data['gwl']
-            date_of_record = form.cleaned_data['date_of_record']
-            temperature = form.cleaned_data['temperature']
-            humidity = form.cleaned_data['humidity']
-            wind_speed = form.cleaned_data['wind_speed']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO env_data (record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", [record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed])
-            form = EnvForm()
+            try:
+                with transaction.atomic():
+                    record_id = generate_new_env_data_id()
+                    rainfall = form.cleaned_data['rainfall']
+                    aqi = form.cleaned_data['aqi']
+                    gwl = form.cleaned_data['gwl']
+                    date_of_record = form.cleaned_data['date_of_record']
+                    temperature = form.cleaned_data['temperature']
+                    humidity = form.cleaned_data['humidity']
+                    wind_speed = form.cleaned_data['wind_speed']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO env_data (record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                            [record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed]
+                        )
+
+                messages.success(request, 'Environmental data added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('record_id', 'A record with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the environmental data. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = EnvForm()
+    
     return render(request, 'employee/addenv.html', {'form': form})
 
 def add_house(request):
     if request.method == 'POST':
         form = HouseForm(request.POST)
         if form.is_valid():
-            household_id = form.cleaned_data['household_id']
-            address = form.cleaned_data['address']
-            category = form.cleaned_data['category']
-            income = form.cleaned_data['income']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO household (household_id, address, category, income) VALUES (%s, %s, %s, %s)", [household_id, address, category, income])
-            form = HouseForm()
+            try:
+                with transaction.atomic():
+                    household_id = generate_new_household_id()
+                    address = form.cleaned_data['address']
+                    category = form.cleaned_data['category']
+                    income = form.cleaned_data['income']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO household (household_id, address, category, income) VALUES (%s, %s, %s, %s)",
+                            [household_id, address, category, income]
+                        )
+
+                messages.success(request, 'Household added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('household_id', 'A household with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the household. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = HouseForm()
+    
     return render(request, 'employee/addhouse.html', {'form': form})
 
 def add_employee(request):
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
         if form.is_valid():
-            employee_id=form.cleaned_data['employee_id']
-            citizen_id=form.cleaned_data['citizen_id']
-            department=form.cleaned_data['department']
-            role = form.cleaned_data['role']
+            try:
+                with transaction.atomic():
+                    employee_id = generate_new_panchayat_employees_id()
+                    citizen_id = form.cleaned_data['citizen_id']
+                    department = form.cleaned_data['department']
+                    role = form.cleaned_data['role']
+                    
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)",
+                            [employee_id, role, '123456']
+                        )
+                        cursor.execute(
+                            "INSERT INTO panchayat_employees (employee_id, citizen_id, role, department) VALUES (%s, %s, %s, %s)",
+                            [employee_id, citizen_id, role, department]
+                        )
 
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)", [employee_id, role, '123456'])
-            cursor.execute("INSERT INTO  panchayat_employees (employee_id, citizen_id, role, department) VALUES (%s, %s, %s, %s)", [employee_id, citizen_id, role, department])
-            
-            print("Form is valid")
-            print(form.cleaned_data)
-
-            form = EmployeeForm()
+                messages.success(request, 'Employee added successfully.')
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    form.add_error('employee_id', 'An employee with this ID already exists.')
+                else:
+                    form.add_error(None, 'An error occurred while adding the employee. Please check all fields and try again.')
+            except Exception as e:
+                form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = EmployeeForm()
+    
     return render(request, 'admin/addemployee.html', {'form': form})
 
 def admhome(request):
@@ -673,11 +1049,6 @@ def delete_employee(request, employee_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-# class panchayat_employees(models.Model):
-#     employee_id = models.OneToOneField(users, primary_key=True, on_delete=models.CASCADE, db_column='user_id')
-#     citizen_id = models.ForeignKey(citizen, on_delete=models.CASCADE, db_column='citizen_id')
-#     role = models.CharField(max_length=511)
-#     department = models.CharField(max_length=511)
 class EmployeeUpdateView(UpdateView):
     model = panchayat_employees
     fields = ['citizen_id', 'role', 'department']

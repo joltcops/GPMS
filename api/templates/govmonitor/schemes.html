@@ -29,18 +29,19 @@
     </ul>
 
     <br>
-    <form action="{% url 'show_date_scheme' %}" method="get">
-        <button type="submit">Show All Benefit Records Between Two Dates</button>
-    </form>
+    <a href="{% url 'show_date_scheme' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show enrolled citizens availing schemes between two Specified Dates</button>
+    </a>
 
     <br>
-    <form action="{% url 'show_stat_scheme' %}" method="get">
-        <button type="submit">Show Stats for a particular scheme</button>
-    </form>
+    <a href="{% url 'show_stat_scheme' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show Stats of a scheme</button>
+    </a>
 
     <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back to Login</button>
+        <button>Back</button>
     </a>
+
 
 </body>
 </html>

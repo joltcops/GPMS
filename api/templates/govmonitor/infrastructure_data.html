@@ -31,18 +31,18 @@
     </ul>
 
     <br>
-    <form action="{% url 'show_date_infra' %}" method="get">
-        <button type="submit">Show All Records Between Two Dates</button>
-    </form>
+    <a href="{% url 'show_date_infra' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show infrastructure data between two specified dates</button>
+    </a>
 
     <br>
-    <form action="{% url 'show_loc_infra' %}" method="get">
-        <button type="submit">Show All Records By Filter</button>
-    </form>
+    <a href="{% url 'show_loc_infra' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show infrastructure data filtered by Location and Type</button>
+    </a>
 
         <br>
     <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back to Login</button>
+        <button>Back</button>
     </a>
     
 </body>

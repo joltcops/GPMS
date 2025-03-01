@@ -1,32 +1,28 @@
-{%load static%}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Government Monitor</title>
-    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Welcome to the Gram Panchayat Management System (Logged in as Government Monitor)</h1>
+    <h1>Welcome to the Citizen Management System (Logged in as Government Monitor)</h1>
     <div class="container">
-        <ul>
         {% for user in data %}
-        <li><a href="{% url 'show_general_census' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+        <a href="{% url 'show_general_census' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
             View Census Details
-        </a></li>
-        <li><a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+        </a>
+        <a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
             View Environment Details
-        </a></li>
-        <li><a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+        </a>
+        <a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
             View Infrastructural Details
-        </a></li>
-        <li><a href="{% url 'agriculture_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+        </a>
+        <a href="{% url 'agriculture_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
             View Agricultural Details
-        </a></li>
-        <li><a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+        </a>
+        <a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
             View Scheme Details
-        </a></li>
+        </a>
         {% endfor %}
-    </ul>
     </div>
 </body>
 </html>

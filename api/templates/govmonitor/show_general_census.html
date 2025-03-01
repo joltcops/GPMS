@@ -38,32 +38,32 @@
 
     <br>
 
-    <form action="{% url 'census_data' %}" method="get">
-        <button type="submit">Show Stats for a particular year and month</button>
-    </form>
+    <a href="{% url 'census_data' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show Census Data Filtered by Year and Month</button>
+    </a>
 
-    <form action="{% url 'census_date_count' %}" method="get">
-        <button type="submit">Show Stats Between Two Dates</button>
-    </form>
+    <a href="{% url 'census_date_count' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Census Data for a Specified Date Range</button>
+    </a>
 
-    <form action="{% url 'census_pop_count' %}" method="get">
-        <button type="submit">Show Population on a Given Date</button>
-    </form>
+    <a href="{% url 'census_edu_count' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Literacy Data</button>
+    </a>
 
-    <form action="{% url 'census_edu_count' %}" method="get">
-        <button type="submit">Show Educational Qualification of People Alive on a Given Date</button>
-    </form>
+    <a href="{% url 'census_income_count' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Income Stats</button>
+    </a>
 
-    <form action="{% url 'census_vacc_count' %}" method="get">
-        <button type="submit">Show Vaccination Stats of People Alive on a Given Date</button>
-    </form>
+    <a href="{% url 'census_pop_count' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Population Stats</button>
+    </a>
 
-    <form action="{% url 'census_income_count' %}" method="get">
-        <button type="submit">Show Income and Tax Stats of People Alive on a Given Date</button>
-    </form>
+    <a href="{% url 'census_vacc_count' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Vaccination Stats</button>
+    </a>
 
     <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back to Login</button>
+        <button>Back</button>
     </a>
 </body>
 </html>

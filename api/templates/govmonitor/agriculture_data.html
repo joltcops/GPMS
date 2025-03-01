@@ -29,22 +29,22 @@
     </ul>
 
     <br>
-    <form action="{% url 'show_income_agri' %}" method="get">
-        <button type="submit">Show Incomes for a Crop Type</button>
-    </form>
+    <a href="{% url 'show_income_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show Income Data of farmers cultivating different crops</button>
+    </a>
 
     <br>
-    <form action="{% url 'show_edu_agri' %}" method="get">
-        <button type="submit">Show Educational Qualifications for a Crop Type</button>
-    </form>
+    <a href="{% url 'show_edu_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show Educational Data of farmers cultivating different crops</button>
+    </a>
 
     <br>
-    <form action="{% url 'show_area_agri' %}" method="get">
-        <button type="submit">Show Citizens with Land Area more than a Particular Value</button>
-    </form>
+    <a href="{% url 'show_area_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Show total area Under cultivation for a specific crop</button>
+    </a>
 
     <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back to Login</button>
+        <button>Back</button>
     </a>
 
 </body>

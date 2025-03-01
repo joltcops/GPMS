@@ -1143,6 +1143,9 @@ def getschemes_gen(request):
     return render(request, 'general/schemes_gen.html', {'schemes': schemes})
 
 def show_date_scheme(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = SchemeDateForm()
     records = None
 
@@ -1156,9 +1159,12 @@ def show_date_scheme(request):
                 cursor.execute("SELECT welfare_schemes.name, COUNT(*) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON scheme_enrollments.scheme_id = welfare_schemes.scheme_id WHERE enrollment_date>=%s AND enrollment_date<=%s GROUP BY welfare_schemes.name;", [start_date, end_date])
                 records = cursor.fetchall()
 
-    return render(request, "govmonitor/show_date_scheme.html", {"form":form, "records":records})
+    return render(request, "govmonitor/show_date_scheme.html", {"form":form, "records":records, "userid":userid, "password":password})
 
 def show_stat_scheme(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = SchemeNameForm()
     records = None
     edu = None
@@ -1175,7 +1181,7 @@ def show_stat_scheme(request):
                 cursor.execute("SELECT welfare_schemes.name, citizen.educational_qualification, COUNT(*) FROM citizen JOIN scheme_enrollments ON citizen.citizen_id = scheme_enrollments.citizen_id JOIN welfare_schemes ON welfare_schemes.scheme_id = scheme_enrollments.scheme_id WHERE welfare_schemes.name = %s GROUP BY welfare_schemes.name, citizen.educational_qualification;", [name])
                 edu = cursor.fetchall()
 
-    return render(request, "govmonitor/show_stat_scheme.html", {"form":form, "records":records, "edu":edu})
+    return render(request, "govmonitor/show_stat_scheme.html", {"form":form, "records":records, "edu":edu, "userid":userid, "password":password})
 
 
 def panchayat_details(request):
@@ -1189,8 +1195,8 @@ def show_general_env(request):
     password = request.GET.get("password")
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature), 
-                   AVG(humidity), AVG(wind_speed) 
+            SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature),
+                   AVG(humidity), AVG(wind_speed)
             FROM env_data;
         """)
         result = cursor.fetchone()  # Fetch a single row
@@ -1215,8 +1221,8 @@ def show_general_env(request):
 def show_general_env_1(request):
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature), 
-                   AVG(humidity), AVG(wind_speed) 
+            SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature),
+                   AVG(humidity), AVG(wind_speed)
             FROM env_data;
         """)
         result = cursor.fetchone()  # Fetch a single row
@@ -1239,6 +1245,9 @@ def show_general_env_1(request):
 
 
 def show_date_env(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = EnvDateForm()  # Initialize the form for GET request
     records = None  # Default value for records
 
@@ -1247,18 +1256,21 @@ def show_date_env(request):
         if form.is_valid():
             start_date = form.cleaned_data['start_date']
             end_date = form.cleaned_data['end_date']
-            
+           
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT * FROM env_data 
+                    SELECT * FROM env_data
                     WHERE date_of_record >= %s AND date_of_record <= %s;
                 """, [start_date, end_date])
-                
+               
                 records = cursor.fetchall()  # Fetch all matching records
 
-    return render(request, "govmonitor/show_date_env.html", {"form": form, "records": records})
+    return render(request, "govmonitor/show_date_env.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def show_val_env(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = EnvValueForm()  # Initialize the form for GET request
     records = None  # Default value for records
 
@@ -1271,18 +1283,21 @@ def show_val_env(request):
             g = form.cleaned_data['ground_water_level']
             h = form.cleaned_data['humidity']
             r = form.cleaned_data['rainfall']
-            
+           
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT * FROM env_data 
+                    SELECT * FROM env_data
                     WHERE temperature >= %s OR aqi >= %s OR gwl >= %s OR humidity >= %s OR rainfall >= %s;
                 """, [t, a, g, h, r])
-                
+               
                 records = cursor.fetchall()  # Fetch all matching records
 
-    return render(request, "govmonitor/show_val_env.html", {"form": form, "records": records})
+    return render(request, "govmonitor/show_val_env.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def show_above_avg_env(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     parameters = {
         "temperature": "Temperature",
         "aqi": "Air Quality Index",
@@ -1308,7 +1323,7 @@ def show_above_avg_env(request):
                     cursor.execute(f"SELECT * FROM env_data WHERE {selected_param} > %s;", [avg_value])
                     records = cursor.fetchall()
 
-    return render(request, "govmonitor/show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records})
+    return render(request, "govmonitor/show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records, "userid":userid, "password":password})
 
 def infrastructure_data(request):
     user_id = request.GET.get("user_id")
@@ -1319,6 +1334,9 @@ def infrastructure_data(request):
     return render(request, 'govmonitor/infrastructure_data.html', {'asset_records':results, "user_id":user_id, "password":password})
 
 def show_date_infra(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = InfraDateForm()
     records=None
     avg_budget = None
@@ -1341,15 +1359,20 @@ def show_date_infra(request):
                 if summary:
                     avg_budget = summary[0]  # Extract AVG(budget)
                     sum_budget = summary[1]  # Extract SUM(budget)
-                
+               
     return render(request, "govmonitor/show_date_infra.html", {
-        "form": form, 
+        "form": form,
         "records": records,
         "avg_budget": avg_budget,
-        "sum_budget": sum_budget
+        "sum_budget": sum_budget,
+        "userid":userid,
+        "password":password
     })
 
 def show_loc_infra(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = InfraLocForm()
     records = None
     avg_budget = None
@@ -1365,15 +1388,15 @@ def show_loc_infra(request):
                 # Query to fetch the filtered records
                 cursor.execute("""
                     SELECT *
-                    FROM assets 
+                    FROM assets
                     WHERE location=%s AND type=%s;
                 """, [location, type])
                 records = cursor.fetchall()
 
                 # Query to get the budget summary
                 cursor.execute("""
-                    SELECT AVG(budget), SUM(budget) 
-                    FROM assets 
+                    SELECT AVG(budget), SUM(budget)
+                    FROM assets
                     WHERE location=%s AND type=%s;
                 """, [location, type])
                 summary = cursor.fetchone()
@@ -1381,12 +1404,14 @@ def show_loc_infra(request):
                 if summary:
                     avg_budget = summary[0]  # Extract AVG(budget)
                     sum_budget = summary[1]  # Extract SUM(budget)
-    
+   
     return render(request, "govmonitor/show_loc_infra.html", {
-        "form": form, 
+        "form": form,
         "records": records,
         "avg_budget": avg_budget,
-        "sum_budget": sum_budget
+        "sum_budget": sum_budget,
+        "userid":userid,
+        "password":password
     })
 
 
@@ -1399,6 +1424,9 @@ def agriculture_data(request):
     return render(request, 'govmonitor/agriculture_data.html', {'land_records':results, "user_id":user_id, "password":password})
 
 def show_income_agri(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = AgriIncome()
     records = None
     avg_income = None
@@ -1421,13 +1449,18 @@ def show_income_agri(request):
                     total_income = summary[1]  # Extract SUM(budget)
 
     return render(request, "govmonitor/show_income_agri.html", {
-        "form": form, 
+        "form": form,
         "records": records,
         "avg_income": avg_income,
-        "total_income": total_income
+        "total_income": total_income,
+        "userid":userid,
+        "password":password
     })
 
 def show_edu_agri(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = AgriIncome()
     records = []
 
@@ -1438,21 +1471,26 @@ def show_edu_agri(request):
 
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT educational_qualification, COUNT(*) 
-                    FROM citizen 
-                    JOIN land_records ON land_records.citizen_id = citizen.citizen_id 
+                    SELECT educational_qualification, COUNT(*)
+                    FROM citizen
+                    JOIN land_records ON land_records.citizen_id = citizen.citizen_id
                     WHERE land_records.crop_type = %s
                     GROUP BY educational_qualification;
                 """, [crop_type])
-                
+               
                 records = cursor.fetchall()
 
     return render(request, "govmonitor/show_edu_agri.html", {
-        "form": form, 
+        "form": form,
         "records": records,
+        "userid": userid,
+        "password": password
     })
 
 def show_area_agri(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = AgriArea()
     records = []
 
@@ -1465,12 +1503,14 @@ def show_area_agri(request):
                 cursor.execute("""
                     SELECT name, area_acres FROM citizen JOIN land_records ON citizen.citizen_id = land_records.citizen_id WHERE area_acres>%s;
                 """, [area])
-                
+               
                 records = cursor.fetchall()
 
     return render(request, "govmonitor/show_area_agri.html", {
-        "form": form, 
+        "form": form,
         "records": records,
+        "userid":userid,
+        "password":password
     })
 
 
@@ -1478,7 +1518,7 @@ def login_page(request):
     return render(request, 'general/login_page.html')
 
 def census_data_login(request):
-    return render(request, 'census_data_login.html')
+    return render(request, 'govmonitor/census_data_login.html')
 
 def environment_data_login(request):
     return render(request, 'environment_data_login.html')
@@ -1512,7 +1552,7 @@ def show_general_census(request):
     # Check if result is None (in case the table is empty)
     if result1 is None or all(v is None for v in result1):
         return render(request, "govmonitor/show_general_census.html", {"error": "No data available"})
-    
+   
     if result2 is None or all(v is None for v in result1):
         return render(request, "govmonitor/show_general_census.html", {"error": "No data available"})
 
@@ -1525,6 +1565,9 @@ def show_general_census(request):
     return render(request, "govmonitor/show_general_census.html", {"data": data, "user_id":user_id, "password":password})
 
 def census_data_func(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = CensusDateForm()
     records = None
 
@@ -1538,9 +1581,12 @@ def census_data_func(request):
                 cursor.execute("SELECT name, event_type, event_date FROM census_data JOIN citizen ON citizen.citizen_id = census_data.citizen_id WHERE EXTRACT(YEAR FROM event_date) = %s AND EXTRACT(MONTH FROM event_date) = %s;", [year, month])
                 records = cursor.fetchall()
 
-    return render(request, "govmonitor/census_data.html", {"form":form, "records": records})
+    return render(request, "govmonitor/census_data.html", {"form":form, "records": records, "userid":userid, "password":password})
 
 def census_date_count(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = CensusYearForm()
     records = None
 
@@ -1555,19 +1601,22 @@ def census_date_count(request):
                     SELECT
                         (SELECT COUNT(*) FROM census_data WHERE event_date BETWEEN %s AND %s AND event_type = 'Birth') AS total_births,
                         (SELECT COUNT(*) FROM census_data WHERE event_date BETWEEN %s AND %s AND event_type = 'Death') AS total_deaths,
-                        (SELECT COUNT(*) FROM census_data 
+                        (SELECT COUNT(*) FROM census_data
                          JOIN citizen ON census_data.citizen_id = citizen.citizen_id
                          WHERE event_date BETWEEN %s AND %s AND event_type = 'Birth' AND gender = 'Male') AS male_births,
-                        (SELECT COUNT(*) FROM census_data 
+                        (SELECT COUNT(*) FROM census_data
                          JOIN citizen ON census_data.citizen_id = citizen.citizen_id
                          WHERE event_date BETWEEN %s AND %s AND event_type = 'Birth' AND gender = 'Female') AS female_births;
                 """, [start_date, end_date] * 4)
-                
+               
                 records = cursor.fetchone()  # Fetch as a tuple
 
-    return render(request, "govmonitor/census_date_count.html", {"form": form, "records": records})
+    return render(request, "govmonitor/census_date_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_pop_count(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = CensusPopForm()
     records = None
 
@@ -1581,35 +1630,35 @@ def census_pop_count(request):
                     SELECT
                         COUNT(*) FILTER (
                             WHERE citizen.citizen_id NOT IN (
-                                SELECT citizen_id FROM census_data 
+                                SELECT citizen_id FROM census_data
                                 WHERE event_type = 'Death' AND event_date < %s
-                            ) 
+                            )
                             AND citizen.citizen_id IN (
-                                SELECT citizen_id FROM census_data 
+                                SELECT citizen_id FROM census_data
                                 WHERE event_type = 'Birth' AND event_date <= %s
                             )
                         ) AS total_population,
-                        
+                       
                         COUNT(*) FILTER (
-                            WHERE citizen.gender = 'Male' 
+                            WHERE citizen.gender = 'Male'
                             AND citizen.citizen_id NOT IN (
-                                SELECT citizen_id FROM census_data 
+                                SELECT citizen_id FROM census_data
                                 WHERE event_type = 'Death' AND event_date < %s
-                            ) 
+                            )
                             AND citizen.citizen_id IN (
-                                SELECT citizen_id FROM census_data 
+                                SELECT citizen_id FROM census_data
                                 WHERE event_type = 'Birth' AND event_date <= %s
                             )
                         ) AS male_count,
-                        
+                       
                         COUNT(*) FILTER (
-                            WHERE citizen.gender = 'Female' 
+                            WHERE citizen.gender = 'Female'
                             AND citizen.citizen_id NOT IN (
-                                SELECT citizen_id FROM census_data 
+                                SELECT citizen_id FROM census_data
                                 WHERE event_type = 'Death' AND event_date < %s
-                            ) 
+                            )
                             AND citizen.citizen_id IN (
-                                SELECT citizen_id FROM census_data 
+                                SELECT citizen_id FROM census_data
                                 WHERE event_type = 'Birth' AND event_date <= %s
                             )
                         ) AS female_count
@@ -1619,9 +1668,12 @@ def census_pop_count(request):
 
                 records = cursor.fetchone()
 
-    return render(request, "govmonitor/census_pop_count.html", {"form": form, "records": records})
+    return render(request, "govmonitor/census_pop_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_edu_count(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = CensusPopForm()
     records = None
 
@@ -1632,17 +1684,17 @@ def census_edu_count(request):
 
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT 
-                        citizen.educational_qualification, 
-                        COUNT(DISTINCT citizen.citizen_id) 
+                    SELECT
+                        citizen.educational_qualification,
+                        COUNT(DISTINCT citizen.citizen_id)
                     FROM citizen
                     JOIN census_data ON citizen.citizen_id = census_data.citizen_id
                     WHERE citizen.citizen_id NOT IN (
-                        SELECT citizen_id FROM census_data 
+                        SELECT citizen_id FROM census_data
                         WHERE event_type = 'Death' AND event_date < %s
-                    ) 
+                    )
                     AND citizen.citizen_id IN (
-                        SELECT citizen_id FROM census_data 
+                        SELECT citizen_id FROM census_data
                         WHERE event_type = 'Birth' AND event_date <= %s
                     )
                     GROUP BY citizen.educational_qualification;
@@ -1650,9 +1702,12 @@ def census_edu_count(request):
 
                 records = cursor.fetchall()
 
-    return render(request, "govmonitor/census_edu_count.html", {"form": form, "records": records})
+    return render(request, "govmonitor/census_edu_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_vacc_count(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = CensusPopForm()
     records = None
 
@@ -1663,18 +1718,18 @@ def census_vacc_count(request):
 
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT 
-                        vaccinations.vaccine_type, 
-                        COUNT(DISTINCT citizen.citizen_id) 
+                    SELECT
+                        vaccinations.vaccine_type,
+                        COUNT(DISTINCT citizen.citizen_id)
                     FROM citizen
                     JOIN census_data ON citizen.citizen_id = census_data.citizen_id
                     JOIN vaccinations ON citizen.citizen_id = vaccinations.citizen_id
                     WHERE citizen.citizen_id NOT IN (
-                        SELECT citizen_id FROM census_data 
+                        SELECT citizen_id FROM census_data
                         WHERE event_type = 'Death' AND event_date < %s
-                    ) 
+                    )
                     AND citizen.citizen_id IN (
-                        SELECT citizen_id FROM census_data 
+                        SELECT citizen_id FROM census_data
                         WHERE event_type = 'Birth' AND event_date <= %s
                     )
                     GROUP BY vaccinations.vaccine_type;
@@ -1682,9 +1737,12 @@ def census_vacc_count(request):
 
                 records = cursor.fetchall()
 
-    return render(request, "govmonitor/census_vacc_count.html", {"form": form, "records": records})
+    return render(request, "govmonitor/census_vacc_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_income_count(request):
+    userid = request.GET.get('userid')
+    password = request.GET.get('password')
+
     form = CensusPopForm()
     records = None
 
@@ -1695,27 +1753,27 @@ def census_income_count(request):
 
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT 
-                        COALESCE(AVG(citizen.income), 0) AS avg_income, 
+                    SELECT
+                        COALESCE(AVG(citizen.income), 0) AS avg_income,
                         COUNT(DISTINCT tax.payer_id) AS pending_tax_count,
                         COALESCE(AVG(tax.amount), 0) AS avg_pending_tax_amount
                     FROM citizen
-                    LEFT JOIN tax ON citizen.citizen_id = tax.payer_id 
-                        AND tax.paid_status = 'DUE' 
+                    LEFT JOIN tax ON citizen.citizen_id = tax.payer_id
+                        AND tax.paid_status = 'DUE'
                         AND tax.due_date <= %s
                     WHERE citizen.citizen_id NOT IN (
-                        SELECT citizen_id FROM census_data 
+                        SELECT citizen_id FROM census_data
                         WHERE event_type = 'Death' AND event_date < %s
-                    ) 
+                    )
                     AND citizen.citizen_id IN (
-                        SELECT citizen_id FROM census_data 
+                        SELECT citizen_id FROM census_data
                         WHERE event_type = 'Birth' AND event_date <= %s
                     );
                 """, [event_date] * 3)
 
                 records = cursor.fetchone()
 
-    return render(request, "govmonitor/census_income_count.html", {"form": form, "records": records})
+    return render(request, "govmonitor/census_income_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 
 def login_view(request):
@@ -1727,16 +1785,16 @@ def login_view(request):
         userid = request.POST.get("userid")
         role = request.POST.get("role")
         password = request.POST.get("password")
-        
+       
         if not userid or not role or not password:
             return HttpResponse("All fields are required.")
-        
+       
         role_mapping = {"ADMIN": 1, "EMPLOYEE": 2, "CITIZEN": 3, "MONITOR": 4}
         role_id = role_mapping.get(role)
-        
+       
         if role_id is None:
             return HttpResponse("Invalid role.")
-        
+       
         try:
             with connection.cursor() as cursor:
                 query = """
@@ -1744,7 +1802,7 @@ def login_view(request):
                 """
                 cursor.execute(query, [userid, password, role])
                 user = cursor.fetchone()
-                
+               
                 if user:
                     if role_id == 3:
                         query = """
@@ -1778,13 +1836,13 @@ def login_view(request):
 
         if not userid or not role or not password:
             return HttpResponse("All fields are required.")
-        
+       
         role_mapping = {"ADMIN": 1, "EMPLOYEE": 2, "CITIZEN": 3, "MONITOR": 4}
         role_id = role_mapping.get(role)
-        
+       
         if role_id is None:
             return HttpResponse("Invalid role.")
-        
+       
         try:
             with connection.cursor() as cursor:
                 query = """
@@ -1792,7 +1850,7 @@ def login_view(request):
                 """
                 cursor.execute(query, [userid, password, role])
                 user = cursor.fetchone()
-                
+               
                 if user:
                     if role_id == 3:
                         query = """
@@ -1809,7 +1867,7 @@ def login_view(request):
                         cursor.execute(query, [userid])
                         columns = [col[0] for col in cursor.description]
                         monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-                        return render(request, "government_monitor.html", {"data": monitor_data})
+                        return render(request, "govmonitor/government_monitor.html", {"data": monitor_data})
                     else:
                         return HttpResponse("Access denied for this role.")
                 else:
@@ -1821,10 +1879,10 @@ def infrastructure_data_monitor(request):
     if request.method == "POST":
         year = request.POST.get("year")
         location = request.POST.get("location")
-        
+       
         if not year or not location:
             return HttpResponse("Year and Location are required.")
-        
+       
         try:
             with connection.cursor() as cursor:
                 query = """
@@ -1835,11 +1893,11 @@ def infrastructure_data_monitor(request):
                 cursor.execute(query, [year, location])
                 columns = [col[0] for col in cursor.description]
                 data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-            
+           
             return render(request, "infrastructure_data_monitor.html", {"data": data})
         except Exception as e:
             return HttpResponse(f"Error fetching data: {e}")
-    
+   
     return HttpResponse("Invalid request method.")
 
 
@@ -1852,7 +1910,7 @@ def infra_gen(request):
         """
         cursor.execute(query)
         results = cursor.fetchall()
-    
+   
     return render(request, 'general/infra_gen.html', {'asset_records': results})
 
 
@@ -1860,10 +1918,10 @@ def env_data_monitor(request):
     if request.method == "POST":
         year = request.POST.get("year")
         month = request.POST.get("month")
-        
+       
         if not year or not month:
             return HttpResponse("Year and Month are required.")
-        
+       
         try:
             with connection.cursor() as cursor:
                 query = """
@@ -1874,7 +1932,7 @@ def env_data_monitor(request):
                 cursor.execute(query, [year, month])
                 columns = [col[0] for col in cursor.description]
                 data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-            
+           
             return render(request, "env_data.html", {"data": data})
         except Exception as e:
             return HttpResponse(f"Error fetching data: {e}")
@@ -1890,7 +1948,7 @@ def members(request, household_id):
             cursor.execute(query, [household_id])
             columns = [col[0] for col in cursor.description]
             members = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
+       
         return render(request, "members.html", {"members": members})
     except Exception as e:
         return HttpResponse(f"Error fetching household details: {e}")

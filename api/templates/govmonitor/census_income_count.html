@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income & Tax Census Data</title>
+</head>
+<body>
+
+    <h2>Filter Income & Tax Status by Date</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Income and Tax Details</h3>
+        <table>
+            <tr>
+                <th>Average Income</th>
+                <th>People with Pending Taxes</th>
+                <th>Average Pending Tax Amount</th>
+            </tr>
+            <tr>
+                <td>{{ records.0|floatformat:2 }}</td>
+                <td>{{ records.1 }}</td>
+                <td>{{ records.2|floatformat:2 }}</td>
+            </tr>
+        </table>
+    {% else %}
+        <p>No records found for the selected date.</p>
+    {% endif %}
+
+    <a href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

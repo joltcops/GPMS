@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education-wise Census Data</title>
+</head>
+<body>
+
+    <h2>Filter Census Data by Date and Education</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Education-wise Population Count</h3>
+        <table>
+            <tr>
+                <th>Educational Qualification</th>
+                <th>Population Count</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                <td>{{ row.0 }}</td>
+                <td>{{ row.1 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No records found for the selected date range.</p>
+    {% endif %}
+
+    <a href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

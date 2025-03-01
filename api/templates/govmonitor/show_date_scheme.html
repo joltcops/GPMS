@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welfare Scheme Enrollments</title>
+</head>
+<body>
+
+    <h2>Filter Scheme Enrollments by Date</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Scheme Enrollment Count</h3>
+        <table>
+            <tr>
+                <th>Welfare Scheme</th>
+                <th>Number of Enrollments</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                <td>{{ row.0 }}</td>
+                <td>{{ row.1 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No enrollments found in the selected date range.</p>
+    {% endif %}
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agriculture Data</title>
+</head>
+<body>
+
+    <h2>Filter Agriculture Data by Education</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Results:</h3>
+        <table>
+            <tr>
+                <th>Educational Qualification</th>
+                <th>Number of Citizens</th>
+            </tr>
+            {% for row in records %}
+            <tr>
+                {% for field in row %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No records found for the selected filter.</p>
+    {% endif %}
+
+</body>
+</html>

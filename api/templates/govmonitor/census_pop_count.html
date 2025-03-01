@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Census Data</title>
+</head>
+<body>
+
+    <h2>Population Data for Selected Date</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if records %}
+        <h3>Results:</h3>
+        <table>
+            <tr>
+                <th>Category</th>
+                <th>Count</th>
+            </tr>
+            <tr>
+                <td>Total Population</td>
+                <td>{{ records.0|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Male Population</td>
+                <td>{{ records.1|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Female Population</td>
+                <td>{{ records.2|default:"N/A" }}</td>
+            </tr>
+        </table>
+    {% else %}
+        <p>No records found for the selected date range.</p>
+    {% endif %}
+
+    <a href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

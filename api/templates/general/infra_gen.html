@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastructure Report</title>
+</head>
+<body>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <h2>Infrastructure Report</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Count</th>
+                <th>Total Budget</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in asset_records %}
+            <tr>
+                <td>{{ asset.0 }}</td>
+                <td>{{ asset.1 }}</td>
+                <td>{{ asset.2 }}</td>
+                <td>{{ asset.3 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'home' %}">Back to Home</a>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Government Monitor</title>
+</head>
+<body>
+    <h1>Welcome to the Citizen Management System (Logged in as Government Monitor)</h1>
+    <div class="container">
+        {% for user in data %}
+        <a href="{% url 'show_general_census' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Census Details
+        </a>
+        <a href="{% url 'general_env' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Environment Details
+        </a>
+        <a href="{% url 'infrastructure_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Infrastructural Details
+        </a>
+        <a href="{% url 'agriculture_data' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Agricultural Details
+        </a>
+        <a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
+            View Scheme Details
+        </a>
+        {% endfor %}
+    </div>
+</body>
+</html>

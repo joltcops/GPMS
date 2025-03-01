@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welfare Schemes</title>
+</head>
+<body>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+        </div>
+    </div>
+
+    <h1>Schemes List</h1>
+    
+    <ul>
+        {% for scheme in schemes %}
+            <li>
+                <p><strong>Name:</strong> {{ scheme.name }}</p>
+                <p><strong>Description:</strong> {{ scheme.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <form action="{% url 'show_date_scheme' %}" method="get">
+        <button type="submit">Show All Benefit Records Between Two Dates</button>
+    </form>
+
+    <br>
+    <form action="{% url 'show_stat_scheme' %}" method="get">
+        <button type="submit">Show Stats for a particular scheme</button>
+    </form>
+
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
+
+</body>
+</html>

@@ -1,11 +1,11 @@
 html{
     font-family: 'Arial', sans-serif;
-    background-color: #333;
-    color:antiquewhite;
+    background-color:cadetblue;
+    color:aliceblue;
 }
 .topbar {
-    background-color: beige;
-    color: #333;
+    background-color:aliceblue;
+    color: cadetblue;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -67,5 +67,77 @@ ul li a:hover{
     background-color:beige;
     color: black;
     opacity: 0.7;
+}
+
+/* Table Styling */
+.certificate-container {
+    margin: 20px auto;
+    width: 80%;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.certificate-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.certificate-table th, .certificate-table td {
+    padding: 10px;
+    border: 1px solid cadetblue;
+    color: #333;
+}
+
+.certificate-table th {
+    background-color: cadetblue;
+    color: white;
+}
+
+/* Dropdown Form */
+.certificate-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.certificate-label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.certificate-dropdown {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    width: 250px;
+    background-color: white;
+    color: #333;
+}
+
+.certificate-dropdown:focus {
+    border-color: cadetblue;
+    outline: none;
+}
+
+/* Apply Button */
+.apply-button {
+    background-color: cadetblue;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.apply-button:hover {
+    background-color: darkcyan;
 }
 

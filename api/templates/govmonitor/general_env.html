@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Environmental Data</title>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">Environmental Data</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <h2>Average Environmental Data</h2>
+
+    {% if error %}
+        <p>{{ error }}</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Average Value</th>
+            </tr>
+            <tr>
+                <td>Rainfall</td>
+                <td>{{ data.avg_rainfall|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Air Quality Index (AQI)</td>
+                <td>{{ data.avg_aqi|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Ground Water Level (GWL)</td>
+                <td>{{ data.avg_gwl|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Temperature</td>
+                <td>{{ data.avg_temperature|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Humidity</td>
+                <td>{{ data.avg_humidity|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td>Wind Speed</td>
+                <td>{{ data.avg_wind_speed|default:"N/A" }}</td>
+            </tr>
+        </table>
+    {% endif %}
+
+    <br>
+
+    <form action="{% url 'show_date_env' %}" method="get">
+        <button type="submit">Show All Records Between Two Dates</button>
+    </form>
+
+    <form action="{% url 'show_val_env' %}" method="get">
+        <button type="submit">Show Records with at Least One Parameter Above Specified Values</button>
+    </form>
+
+    <!-- Button to navigate to show_above_avg_env page -->
+    <br>
+    <form action="{% url 'show_above_avg_env' %}" method="get">
+        <button type="submit">Show Records with a Parameter Above Average</button>
+    </form>
+
+    <!-- Back to Login View -->
+    <br>
+    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+        <button>Back to Login</button>
+    </a>
+
+</body>
+</html>

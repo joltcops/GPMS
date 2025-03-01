@@ -1,39 +1,55 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welfare Scheme Enrollments</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+        </div>
+    </div>
 
-    <h2>Filter Scheme Enrollments by Date</h2>
+    <div class="citizen-list-container">
+        <h1>Filter Scheme Enrollments by Date</h1>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Filter</button>
-    </form>
+        <form method="post" class="certificate-fields">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="certificate-button">Filter</button>
+        </form>
 
-    {% if records %}
-        <h3>Scheme Enrollment Count</h3>
-        <table>
-            <tr>
-                <th>Welfare Scheme</th>
-                <th>Number of Enrollments</th>
-            </tr>
-            {% for row in records %}
-            <tr>
-                <td>{{ row.0 }}</td>
-                <td>{{ row.1 }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No enrollments found in the selected date range.</p>
-    {% endif %}
+        {% if records %}
+            <h2>Scheme Enrollment Count</h2>
+            <table class="citizen-table">
+                <thead>
+                    <tr>
+                        <th>Welfare Scheme</th>
+                        <th>Number of Enrollments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in records %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="error-message">No enrollments found in the selected date range.</p>
+        {% endif %}
 
-    <a href="{% url 'schemes' %}?user_id={{ userid }}&password={{ password }}">Back</a>
-
+        <br><br>
+        <a href="{% url 'schemes' %}?user_id={{ userid }}&password={{ password }}" class="certificate-button">Back</a>
+    </div>
 </body>
 </html>

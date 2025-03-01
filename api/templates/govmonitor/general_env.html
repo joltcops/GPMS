@@ -1,78 +1,81 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>General Environmental Data</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
     <div class="topbar">
         <div class="topbar-left">Environmental Data</div>
         <div class="topbar-right">
             <a href="{% url 'home' %}">Home</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
         </div>
     </div>
 
-    <h2>Average Environmental Data</h2>
+    <div class="citizen-list-container">
+        <h1>Average Environmental Data</h1>
 
-    {% if error %}
-        <p>{{ error }}</p>
-    {% else %}
-        <table>
-            <tr>
-                <th>Parameter</th>
-                <th>Average Value</th>
-            </tr>
-            <tr>
-                <td>Rainfall</td>
-                <td>{{ data.avg_rainfall|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Air Quality Index (AQI)</td>
-                <td>{{ data.avg_aqi|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Ground Water Level (GWL)</td>
-                <td>{{ data.avg_gwl|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Temperature</td>
-                <td>{{ data.avg_temperature|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Humidity</td>
-                <td>{{ data.avg_humidity|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Wind Speed</td>
-                <td>{{ data.avg_wind_speed|default:"N/A" }}</td>
-            </tr>
-        </table>
-    {% endif %}
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% else %}
+            <table class="citizen-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Average Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Rainfall</td>
+                        <td>{{ data.avg_rainfall|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Air Quality Index (AQI)</td>
+                        <td>{{ data.avg_aqi|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ground Water Level (GWL)</td>
+                        <td>{{ data.avg_gwl|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Temperature</td>
+                        <td>{{ data.avg_temperature|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Humidity</td>
+                        <td>{{ data.avg_humidity|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Wind Speed</td>
+                        <td>{{ data.avg_wind_speed|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
 
-    <br>
+        <br>
 
-    <a href="{% url 'show_date_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Environment Data Between Specified Dates</button>
-    </a>
-
-    <a href="{% url 'show_val_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>View Records with at least one parameter above a fixed value</button>
-    </a>
-
-    <!-- Button to navigate to show_above_avg_env page -->
-    <br>
-    <a href="{% url 'show_above_avg_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>View Records Filtered by a parameter above average</button>
-    </a>
-
-    <!-- Back to Login View -->
-    <br>
-    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back</button>
-    </a>
-
+        <a href="{% url 'show_date_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Environment Data Between Specified Dates
+        </a>
+        <br> <br><br>
+        <a href="{% url 'show_val_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            View Records with at least one parameter above a fixed value
+        </a>
+        <br><br><br>
+        <a href="{% url 'show_above_avg_env' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            View Records Filtered by a parameter above average
+        </a>
+        <br><br><br>
+        <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Back
+        </a>
+    </div>
 </body>
 </html>

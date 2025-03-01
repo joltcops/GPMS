@@ -1,12 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assets</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-
     <!-- Topbar -->
     <div class="topbar">
         <div class="topbar-left">GPMS</div>
@@ -17,33 +18,39 @@
         </div>
     </div>
 
-        <br>
-    
-    <ul>
-        {% for emp in asset_records %}
-            <li>
-                <p><strong>Total expenditure:</strong> {{ emp.0 }}</p>
-                <p><strong>Average expenditure:</strong> {{ emp.1 }}</p>
-                <p><strong>Max expenditure:</strong> {{ emp.2 }}</p>
-                <p><strong>Min expenditure:</strong> {{ emp.3 }}</p>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="citizen-list-container">
+        <h1>Assets Information</h1>
 
-    <br>
-    <a href="{% url 'show_date_infra' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show infrastructure data between two specified dates</button>
-    </a>
-
-    <br>
-    <a href="{% url 'show_loc_infra' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show infrastructure data filtered by Location and Type</button>
-    </a>
+        <div class="card">
+            <div class="card-header">Asset Statistics</div>
+            <div class="card-body">
+                <ul>
+                    {% for emp in asset_records %}
+                        <li>
+                            <p><strong>Total expenditure:</strong> {{ emp.0|floatformat:2 }}</p>
+                            <p><strong>Average expenditure:</strong> {{ emp.1|floatformat:2 }}</p>
+                            <p><strong>Max expenditure:</strong> {{ emp.2|floatformat:2 }}</p>
+                            <p><strong>Min expenditure:</strong> {{ emp.3|floatformat:2 }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
         <br>
-    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back</button>
-    </a>
-    
+        <a href="{% url 'show_date_infra' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Show infrastructure data between two specified dates
+        </a>
+
+        <br><br><br>
+        <a href="{% url 'show_loc_infra' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Show infrastructure data filtered by Location and Type
+        </a>
+
+        <br><br><br>
+        <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Back
+        </a>
+    </div>
 </body>
 </html>

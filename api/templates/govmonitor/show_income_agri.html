@@ -1,46 +1,63 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agriculture Data</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-
-    <h2>Filter Agriculture Data by Income</h2>
-
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Filter</button>
-    </form>
-
-    {% if records %}
-        <h3>Results:</h3>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Income</th>
-            </tr>
-            {% for row in records %}
-            <tr>
-                {% for field in row %}
-                <td>{{ field }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-
-        <div class="summary">
-            <h3>Budget Summary:</h3>
-            <p><strong>Average Income:</strong> {{ avg_income }}</p>
-            <p><strong>Total Income:</strong> {{ total_income }}</p>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
         </div>
+    </div>
 
-    {% else %}
-        <p>No records found for the selected filter.</p>
-    {% endif %}
+    <div class="citizen-list-container">
+        <h1>Filter Agriculture Data by Income</h1>
 
-    <a href="{% url 'agriculture_data' %}?user_id={{ userid }}&password={{ password }}">Back</a>
+        <form method="post" class="certificate-fields">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="certificate-button">Filter</button>
+        </form>
+
+        {% if records %}
+            <h2>Results:</h2>
+            <table class="citizen-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Income</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in records %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="card">
+                <div class="card-header">Income Summary</div>
+                <div class="card-body">
+                    <p><strong>Average Income:</strong> {{ avg_income|floatformat:2 }}</p>
+                    <p><strong>Total Income:</strong> {{ total_income|floatformat:2 }}</p>
+                </div>
+            </div>
+        {% else %}
+            <p class="error-message">No records found for the selected filter.</p>
+        {% endif %}
+
+        <br><br>
+        <a href="{% url 'agriculture_data' %}?user_id={{ userid }}&password={{ password }}" class="certificate-button">Back</a>
+    </div>
 </body>
 </html>

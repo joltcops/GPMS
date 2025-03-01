@@ -228,7 +228,7 @@ def generate_new_panchayat_employees_id():
 
     return new_id
 
-def add_citizen(request):
+def add_citizen(request, employee_id):
     if request.method == 'POST':
         form = CitizenForm(request.POST)
         if form.is_valid():
@@ -254,7 +254,9 @@ def add_citizen(request):
                                        [citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income])
                 
                 messages.success(request, 'Citizen added successfully.')
-                form = CitizenForm()  # Reset the form after successful submission
+                # form = CitizenForm()  # Reset the form after successful submission
+                return redirect('emp_home', emp_id=employee_id)
+
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('citizen_id', 'A citizen with this ID already exists.')
@@ -347,10 +349,13 @@ def applycertificate(request, citizen_id):
                             "INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)",
                             [application_id, certificate_type, citizen_id, 'PENDING']
                         )
-
+                storage = messages.get_messages(request)
+                for message in storage:
+                    # This iteration clears the messages
+                    pass
+                storage.used = True
                 messages.success(request, 'Certificate application submitted successfully.')
-                # redirect to path('mycertificate/<str:citizen_id>/', views.mycertificate, name='my_certificates'),
-                # return redirect('my_certificates', citizen_id=citizen_id)  # Redirect to a list of certificates or appropriate page
+                return redirect('my_certificates', citizen_id=citizen_id)
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('application_id', 'An application with this ID already exists.')
@@ -358,11 +363,11 @@ def applycertificate(request, citizen_id):
                     form.add_error(None, 'An error occurred while submitting the application. Please check all fields and try again.')
             except Exception as e:
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
-        redirect('my_certificates', citizen_id=citizen_id)
     else:
         form = CertificateForm()
     
     return render(request, 'citizen/applycertificate.html', {'form': form})
+
 
 def applybenefits(request, citizen_id):
     if request.method == 'POST':
@@ -378,8 +383,14 @@ def applybenefits(request, citizen_id):
                             "INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)",
                             [application_id, citizen_id, scheme_id, 'PENDING']
                         )
+                storage = messages.get_messages(request)
+                for message in storage:
+                    # This iteration clears the messages
+                    pass
+                storage.used = True
 
                 messages.success(request, 'Benefit application submitted successfully.')
+                return redirect('my_benefits', citizen_id=citizen_id)
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('application_id', 'An application with this ID already exists.')

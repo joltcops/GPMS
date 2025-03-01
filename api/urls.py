@@ -5,7 +5,7 @@ from .views import empcitdetails, CitizenUpdateView, HouseholdUpdateView, LandUp
 
 urlpatterns = [
     path('', views.home_page, name = 'home'),
-    path('add-citizen/', views.add_citizen, name = 'add_citizen'),
+    path('add-citizen/<str:employee_id>', views.add_citizen, name = 'add_citizen'),
     path('add-employee/', views.add_employee, name = 'add_employee'),
     path('citizenslist/', views.citizen_list, name='citizen_list'),
     path('employeeslist/', views.employee_list, name='employee_list'),

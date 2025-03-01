@@ -54,6 +54,13 @@
             <option value="LAND OWNERSHIP CERTIFICATE">Land Ownership Certificate</option>
             <option value="BIRTH CERTIFICATE">Birth Certificate</option>
         </select>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <button type="submit" class="apply-button">Apply</button>
     </form>
 

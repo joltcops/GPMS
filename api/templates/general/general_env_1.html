@@ -1,61 +1,69 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
     <title>General Environmental Data</title>
 </head>
 <body>
-
-    <!-- Topbar -->
     <div class="topbar">
         <div class="topbar-left">GPMS</div>
         <div class="topbar-right">
             <a href="{% url 'home' %}">Home</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
         </div>
     </div>
 
-    <h2>Average Environmental Data</h2>
+    <h1>Average Environmental Data</h1>
 
     {% if error %}
         <p>{{ error }}</p>
     {% else %}
-        <table>
-            <tr>
-                <th>Parameter</th>
-                <th>Average Value</th>
-            </tr>
-            <tr>
-                <td>Rainfall</td>
-                <td>{{ data.avg_rainfall|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Air Quality Index (AQI)</td>
-                <td>{{ data.avg_aqi|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Ground Water Level (GWL)</td>
-                <td>{{ data.avg_gwl|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Temperature</td>
-                <td>{{ data.avg_temperature|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Humidity</td>
-                <td>{{ data.avg_humidity|default:"N/A" }}</td>
-            </tr>
-            <tr>
-                <td>Wind Speed</td>
-                <td>{{ data.avg_wind_speed|default:"N/A" }}</td>
-            </tr>
-        </table>
+        <div class="certificate-container">
+            <table class="certificate-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Average Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Rainfall</td>
+                        <td>{{ data.avg_rainfall|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Air Quality Index (AQI)</td>
+                        <td>{{ data.avg_aqi|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ground Water Level (GWL)</td>
+                        <td>{{ data.avg_gwl|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Temperature</td>
+                        <td>{{ data.avg_temperature|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Humidity</td>
+                        <td>{{ data.avg_humidity|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Wind Speed</td>
+                        <td>{{ data.avg_wind_speed|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     {% endif %}
 
-    <br>
-    <a href="{% url 'home' %}">Back to Home</a>
+    <form action="{% url 'home' %}" method="GET" class="certificate-form">
+        <button type="submit" class="apply-button">Back to Home</button>
+    </form>
 
 </body>
 </html>

@@ -1,11 +1,24 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/general.css' %}">
     <title>Contact Us</title>
 </head>
 <body>
+
+    <div class="nav">
+        <div class="topbar">
+            <div class="topbar-left">GPMS</div>
+            <div class="topbar-right">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'about' %}">About</a>
+                <a href="{% url 'contact' %}">Contact</a>
+            </div>
+        </div>
+    </div>
 
     <h1>Contact Us</h1>
     <p>Pracheta Saha: (+91)9163676995</p>
@@ -14,7 +27,7 @@
     <p>Vaasu Singla: (+91)9084786199</p>
     <p>Arudeep Kumar: (+91)9572053263</p>
 
-    <a href="{% url 'home' %}">Back to Home</a>
+    <a class = "apply-button" href="{% url 'home' %}">Back to Home</a>
 
 </body>
 </html>

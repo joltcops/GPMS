@@ -19,7 +19,7 @@
     
     <ul>
         <li><a href="{% url 'emp_detail' emp.employee_id %}">My Profile</a></li>
-        <li> <a href = "{% url 'add_citizen' %}"> Add Citizen </a></li>
+        <li> <a href = "{% url 'add_citizen' emp.employee_id %}"> Add Citizen </a></li>
         <li> <a href = "{% url 'citizen_list' %}">Citizen List</a></li>
         <li> <a href = "{% url 'assetslist' %}">Assets List</a></li>
         <li> <a href = "{% url 'census_data_list' %}">Census Data</a></li>

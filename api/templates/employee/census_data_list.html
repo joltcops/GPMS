@@ -1,27 +1,56 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Census List</title>
+    <title>Census Data</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Census Data</h1>
-    <a href = "{% url 'add_census_data' %}"> Add Census Data </a>
-    <ul>
-    {% for cen in census_data %}
-        <li>
-                (Census ID: {{ cen.census_id }}) (Citizen ID: {{ cen.citizen_id }}) (Event Type: {{ cen.event_type }}) (Event Date: {{ cen.event_date }})
-                <a href="{% url 'cen_edit' cen.census_id %}" class="btn btn-warning">Edit</a>
-                <button onclick="confirmDelete('{{ cen.census_id }}')">Delete</button>
-            </a>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Census Data</h1>
+        <a href="{% url 'add_census_data' %}" class="certificate-button">Add Census Data</a>
+        <br><br>
+
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>Census ID</th>
+                    <th>Citizen ID</th>
+                    <th>Event Type</th>
+                    <th>Event Date</th>
+                    <th>Actions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cen in census_data %}
+                    <tr>
+                        <td>{{ cen.census_id }}</td>
+                        <td>{{ cen.citizen_id }}</td>
+                        <td>{{ cen.event_type }}</td>
+                        <td>{{ cen.event_date }}</td>
+                        <td>
+                            <button class = "delete-button"><a href="{% url 'cen_edit' cen.census_id %}" class="edit-button">Edit</a></button>
+                        </td>
+                        <td>
+                            <button class="delete-button" onclick="confirmDelete('{{ cen.census_id }}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
+
 <script>
-    function confirmDelete(cen_id) {
-        if (confirm(`Are you sure you want to delete ${cen_id}?`)) {
-            fetch(`/api/delete-cen/${cen_id}/`, {
+    function confirmDelete(cenId) {
+        if (confirm(`Are you sure you want to delete Census ID: ${cenId}?`)) {
+            fetch(`/api/delete-cen/${cenId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}',
@@ -31,11 +60,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById(`cen-${cen_id}`).remove();
+                    location.reload(); // Refresh the page after deleting
                 } else {
-                    
+                    alert('Failed to delete census data');
                 }
             });
         }
     }
-    </script>
+</script>

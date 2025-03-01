@@ -1,18 +1,38 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Certificate List</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Certificate List</h1>
-    <ul>
-    {% for certificate in certificates %}
-        <li>
-                (Application ID: {{ certificate.application_id }}) (Type: {{ certificate.certificate_type }}) (Applicant ID: {{ certificate.citizen_id }})
-            </a>
-            <a href="{% url 'certificate_approve' certificate.application_id %}" class="btn btn-warning">Approve</a>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Certificate List</h1>
+
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Certificate Type</th>
+                    <th>Applicant ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for certificate in certificates %}
+                    <tr id="certificate-{{ certificate.application_id }}">
+                        <td>{{ certificate.application_id }}</td>
+                        <td>{{ certificate.certificate_type }}</td>
+                        <td>{{ certificate.citizen_id }}</td>
+                        <td>
+                            <a href="{% url 'certificate_approve' certificate.application_id %}" class="edit-button">Approve</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>

@@ -1,14 +1,47 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Add Citizen</title>
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
 </head>
 <body>
-    <h1>Add New Citizen</h1>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
-    </form>
+
+    <div class="certificate-form-container">
+        <h1>Add New Citizen</h1>
+
+        <!-- Display Form Errors -->
+        {% if form.non_field_errors %}
+            <div class="error-message">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="certificate-fields">
+                {% for field in form %}
+                    <p>
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <span class="error-message">
+                                {% for error in field.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </span>
+                        {% endif %}
+                    </p>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="certificate-button">Submit</button>
+        </form>
+    </div>
+
 </body>
 </html>

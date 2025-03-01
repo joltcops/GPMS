@@ -36,6 +36,7 @@ ul {
 
 ul li {
     padding: 10px 15px;
+    color: black;
     background-color: #f4f4f4; 
     transition: background-color 0.3s, color 0.3s;
     border-radius: 5px; 
@@ -67,6 +68,102 @@ ul li a:hover{
     background-color:beige;
     color: black;
     opacity: 0.7;
+}
+
+.apply-button {
+    background-color: darkcyan;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+.apply-button:hover {
+    background-color: rgb(1, 125, 125);
+}
+
+/* Table Styling */
+.certificate-container {
+    margin: 20px auto;
+    width: 80%;
+    background-color: white;
+    padding: 2px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.certificate-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.certificate-table th, .certificate-table td {
+    padding: 10px;
+    border: 1px solid cadetblue;
+    color: #333;
+}
+
+.certificate-table th {
+    background-color: cadetblue;
+    color: white;
+}
+
+/* Styles specifically for the enhanced login page */
+.login-container {
+    width: 35%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    margin: 50px auto;
+}
+
+.login-container h1 {
+    color: cadetblue;
+    font-size: 26px;
+    margin-bottom: 15px;
+}
+
+.login-input {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.login-select {
+    width: 95%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: darkcyan;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.login-button:hover {
+    background-color: rgb(1, 125, 125);
 }
 
 

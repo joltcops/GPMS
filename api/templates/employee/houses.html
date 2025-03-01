@@ -1,19 +1,70 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Households</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Households</h1>
-    <a href="{% url 'add_house' %}">Add</a>
-    <ul>
-    {% for house in houses %}
-        <li>
-                (Household: {{ house.household_id }}) (Address: {{ house.address }}) (Category: {{ house.category }}) (Household income: {{ house.income }})
-            </a>
-            <a href="{% url 'house_edit' house.household_id %}" class="btn btn-warning">Edit</a>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Households</h1>
+        <a href="{% url 'add_house' %}" class="certificate-button">Add Household</a>
+        <br><br>
+
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>Household ID</th>
+                    <th>Address</th>
+                    <th>Category</th>
+                    <th>Income</th>
+                    <th>Actions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for house in houses %}
+                    <tr id="house-{{ house.household_id }}">
+                        <td>{{ house.household_id }}</td>
+                        <td>{{ house.address }}</td>
+                        <td>{{ house.category }}</td>
+                        <td>{{ house.income }}</td>
+                        <td>
+                            <button class="delete-button">
+                                <a href="{% url 'house_edit' house.household_id %}" class="edit-button">Edit</a>
+                            </button>
+                        </td>
+                        <td>
+                            <button class="delete-button" onclick="confirmDelete('{{ house.household_id }}')">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
+
+<script>
+    function confirmDelete(householdId) {
+        if (confirm(`Are you sure you want to delete Household ID: ${householdId}?`)) {
+            fetch(`/api/delete-house/${householdId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`house-${householdId}`).remove();
+                } else {
+                    alert('Failed to delete household record');
+                }
+            });
+        }
+    }
+</script>

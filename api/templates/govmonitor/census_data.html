@@ -1,23 +1,27 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Environmental Data</title>
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
+    <title>Census Data</title>
 </head>
 <body>
 
     <h2>Census Data for a Selected Year and Month</h2>
-
-    <form method="post">
+    <div class="certificate-form-container">
+    <form method="post" class="certificate-fields">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Filter</button>
+        <button type="submit" class="certificate-button">Filter</button>
     </form>
+</div>
 
     {% if records %}
         <h3>Results:</h3>
-        <table>
+        <div class="certificate-container">
+        <table class="certificate-table">
             <tr>
                 <th>Citizen Name</th>
                 <th>Event Type</th>
@@ -31,11 +35,13 @@
             </tr>
             {% endfor %}
         </table>
+    </div>
     {% else %}
         <p>No records found for the selected date range.</p>
     {% endif %}
 
-    <a href="{% url 'show_general_census' %}?user_id={{ userid }}&password={{ password }}">Back</a>
+    <a class="apply-button" href="{% url 'show_general_census' %}?user_id={{ userid }}&password={{ password }}">Back</a>
+
 
 </body>
 </html>

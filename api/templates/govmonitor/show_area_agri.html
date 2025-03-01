@@ -1,40 +1,56 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
     <title>Agriculture Data</title>
 </head>
 <body>
 
-    <h2>Filter Agriculture Data</h2>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+        </div>
+    </div>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Filter</button>
-    </form>
+    <h2>Filter Agriculture Data</h2>
+    <div class="certificate-form-container">
+        <form method="post" class="certificate-fields">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="certificate-button">Filter</button>
+        </form>
+    </div>
 
     {% if records %}
-        <h3>Results:</h3>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Area Cultivated (in acres)</th>
-            </tr>
-            {% for row in records %}
-            <tr>
-                {% for field in row %}
-                <td>{{ field }}</td>
+    <h3>Results:</h3>
+        <div class="certificate-container">
+            
+            <table class="certificate-table">
+                <tr>
+                    <th>Name</th>
+                    <th>Area Cultivated (in acres)</th>
+                </tr>
+                {% for row in records %}
+                <tr>
+                    {% for field in row %}
+                    <td>{{ field }}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
+            </table>
+        </div>
     {% else %}
         <p>No records found for the selected filter.</p>
     {% endif %}
 
-    <a href="{% url 'agriculture_data' %}?user_id={{ userid }}&password={{ password }}">Back</a>
+    <a class="apply-button" href="{% url 'agriculture_data' %}?user_id={{ userid }}&password={{ password }}">Back</a>
 
 </body>
 </html>

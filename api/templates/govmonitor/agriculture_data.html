@@ -1,8 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
     <title>Agriculture - Land Records</title>
 </head>
 <body>
@@ -19,33 +21,46 @@
 
     <h1>Land Records</h1>
 
+    {% if land_records %}
+        <div class="certificate-container">
+            <table class="certificate-table">
+                <tr>
+                    <th>Crop Type</th>
+                    <th>Area</th>
+                </tr>
+                {% for lands in land_records %}
+                <tr>
+                    <td>{{ lands.0 }}</td>
+                    <td>{{ lands.1 }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% else %}
+        <p>No land records available.</p>
+    {% endif %}
+
     <ul>
-        {% for lands in land_records %}
-            <li>
-                <p><strong>Crop Type:</strong> {{ lands.0 }}</p>
-                <p><strong>Area:</strong> {{ lands.1 }}</p>
-            </li>
-        {% endfor %}
+        <br>
+        <li><a href="{% url 'show_income_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+            Show Income Data of farmers cultivating different crops
+        </a></li>
+
+        <br>
+        <li><a href="{% url 'show_edu_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+            Show Educational Data of farmers cultivating different crops
+        </a></li>
+
+        <br>
+        <li><a href="{% url 'show_area_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+            Show Total Area Under Cultivation for a Specific Crop
+        </a></li>
+
+        <br>
+        <li><a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
+            Back
+        </a></li>
     </ul>
-
-    <br>
-    <a href="{% url 'show_income_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show Income Data of farmers cultivating different crops</button>
-    </a>
-
-    <br>
-    <a href="{% url 'show_edu_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show Educational Data of farmers cultivating different crops</button>
-    </a>
-
-    <br>
-    <a href="{% url 'show_area_agri' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show total area Under cultivation for a specific crop</button>
-    </a>
-
-    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back</button>
-    </a>
 
 </body>
 </html>

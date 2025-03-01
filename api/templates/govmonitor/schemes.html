@@ -1,12 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welfare Schemes</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-
     <!-- Topbar -->
     <div class="topbar">
         <div class="topbar-left">GPMS</div>
@@ -17,31 +18,37 @@
         </div>
     </div>
 
-    <h1>Schemes List</h1>
-    
-    <ul>
-        {% for scheme in schemes %}
-            <li>
-                <p><strong>Name:</strong> {{ scheme.name }}</p>
-                <p><strong>Description:</strong> {{ scheme.description }}</p>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="citizen-list-container">
+        <h1>Schemes List</h1>
+        
+        <div class="card">
+            <div class="card-header">Available Schemes</div>
+            <div class="card-body">
+                <ul>
+                    {% for scheme in schemes %}
+                        <li>
+                            <p><strong>Name:</strong> {{ scheme.name }}</p>
+                            <p><strong>Description:</strong> {{ scheme.description }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
-    <br>
-    <a href="{% url 'show_date_scheme' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show enrolled citizens availing schemes between two Specified Dates</button>
-    </a>
+        <br>
+        <a href="{% url 'show_date_scheme' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Show enrolled citizens availing schemes between two Specified Dates
+        </a>
 
-    <br>
-    <a href="{% url 'show_stat_scheme' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Show Stats of a scheme</button>
-    </a>
+        <br><br><br>
+        <a href="{% url 'show_stat_scheme' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Show Stats of a scheme
+        </a>
 
-    <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR">
-        <button>Back</button>
-    </a>
-
-
+        <br><br><br>
+        <a href="{% url 'login_view' %}?userid={{ user_id }}&password={{ password }}&role=MONITOR" class="certificate-button">
+            Back
+        </a>
+    </div>
 </body>
 </html>

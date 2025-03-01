@@ -407,6 +407,7 @@ def view_cert_list(request):
     certs = certificate_application.objects.raw('SELECT * FROM certificate_application WHERE status = %s', ['PENDING'])
     return render(request, 'employee/certificate_list.html', {'certificates': certs})
 
+
 def certificate_approve(request, application_id):
     if request.method == 'POST':
         form = CertificateApprovalForm(request.POST)
@@ -490,7 +491,6 @@ def benefit_approve(request, application_id):
 def view_bene_list(request):
     bene = benefit_application.objects.raw('SELECT * FROM benefit_application WHERE status = %s', ['PENDING'])
     return render(request, 'employee/benefit_list.html', {'benefits': bene})
-
 
 def logout(request):
     return render(request, 'logout.html')
@@ -645,7 +645,7 @@ class CenUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('census_data_list')
 
-    
+
 def add_land(request, citizen_id):
     if request.method == 'POST':
         form = LandForm(request.POST)
@@ -676,7 +676,6 @@ def add_land(request, citizen_id):
         form = LandForm()
     
     return render(request, 'employee/addland.html', {'form': form, 'citizen_id': citizen_id})
-
 def add_vaccine(request, citizen_id):
     if request.method == 'POST':
         form = VaccineForm(request.POST)
@@ -739,7 +738,7 @@ def delete_citizen(request, citizen_id):
 def assetslist(request):
     asset = assets.objects.raw('SELECT * FROM assets')
     return render(request, 'employee/assets_list.html', {'assets': asset})
-    
+
 def add_assets(request):
     if request.method == 'POST':
         form = AssetsForm(request.POST)
@@ -799,7 +798,6 @@ def add_welfare_schemes(request):
         form = WelfareForm()
     
     return render(request, 'employee/addwelfareschemes.html', {'form': form})
-
 
 @require_POST
 def delete_asset(request, asset_id):
@@ -900,7 +898,6 @@ class HouseUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('house_list')
 
-    
 def add_tax(request, citizen_id):
     if request.method == 'POST':
         form = TaxForm(request.POST)

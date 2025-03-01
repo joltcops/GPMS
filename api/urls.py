@@ -56,4 +56,5 @@ urlpatterns = [
     path('infra_gen/', views.infra_gen, name = 'infra_gen'),
     path('getcertificates/', views.getcertificates, name = 'getcertificates'),
     path('getbenefits/', views.getbenefits, name = 'getbenefits'),
+    path('logout/', views.logout_view, name = 'logout')
 ]

@@ -12,7 +12,8 @@ from .forms import CitizenForm, BenefitForm, EnvDateForm, EnvValueForm, InfraDat
 from datetime import date
 from django.http import HttpResponse
 from .models import certificate_application  # Ensure the correct import
-
+from django.contrib.auth import  authenticate, login, logout
+from django.contrib.auth.models import User
 from django.db.models import Max
 import re
 
@@ -34,21 +35,28 @@ def getRoutes(request):
 #Get all books
 @api_view(['GET'])
 def getcitizens(request):
+    
     citizens=citizen.objects.all()
     CitizenSerializer=citizenSerializer(citizens, many=True)
     return Response(CitizenSerializer.data)
 
 def getschemes(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     schemes=welfare_schemes.objects.all()
     return render(request, 'schemes.html', {'schemes': schemes, "user_id":user_id, "password":password})
 
 def getschemes_gen(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     schemes=welfare_schemes.objects.all()
     return render(request, 'schemes_gen.html', {'schemes': schemes})
 
 def show_date_scheme(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = SchemeDateForm()
@@ -67,6 +75,8 @@ def show_date_scheme(request):
     return render(request, "show_date_scheme.html", {"form":form, "records":records, "userid":userid, "password":password})
 
 def show_stat_scheme(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = SchemeNameForm()
@@ -149,6 +159,8 @@ def generate_new_certificate_id():
 
 
 def add_citizen(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = CitizenForm(request.POST)
         if form.is_valid():
@@ -174,6 +186,8 @@ def add_citizen(request):
     return render(request, 'addcitizen.html', {'form': form})
 
 def approve_certificate(request, application_id, employee_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     # Get application or return 404 if not found
     application = get_object_or_404(certificate_application, application_id=application_id)
 
@@ -203,16 +217,22 @@ def home_page(request):
     return render(request, 'index.html')
 
 def citizen_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citizens = citizen.objects.all()
     return render(request, 'citizen_list.html', {'citizens': citizens})
 
 def citizen_detail(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = get_object_or_404(citizen, citizen_id=citizen_id)
     return render(request, 'citizen_detail.html', {'citizen': citi})
 
 
 
 def panchayat_details(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     employee = panchayat_employees.objects.all()
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT name, role, department FROM citizen, panchayat_employees WHERE citizen.citizen_id=panchayat_employees.citizen_id")  # Query only required fields
@@ -221,6 +241,8 @@ def panchayat_details(request):
     return render(request, 'panchayat_details.html', {'employee': results})
 
 def environment_data(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'environment_data.html')
 
 # def infrastructure_data(request):
@@ -230,6 +252,8 @@ def environment_data(request):
 #     return render(request, 'login_page.html')
 
 def show_general_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")  # Retrieve user_id from query parameters
     password = request.GET.get("password")
     with connection.cursor() as cursor:
@@ -258,6 +282,8 @@ def show_general_env(request):
 
 
 def show_general_env_1(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature), 
@@ -284,6 +310,8 @@ def show_general_env_1(request):
 
 
 def show_date_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
     form = EnvDateForm()  # Initialize the form for GET request
@@ -306,6 +334,8 @@ def show_date_env(request):
     return render(request, "show_date_env.html", {"form": form, "records": records, 'userid':userid, 'password':password})
 
 def show_val_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
     form = EnvValueForm()  # Initialize the form for GET request
@@ -332,6 +362,8 @@ def show_val_env(request):
     return render(request, "show_val_env.html", {"form": form, "records": records,'userid':userid, 'password':password})
 
 def show_above_avg_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
     parameters = {
@@ -372,10 +404,13 @@ def show_above_avg_env(request):
 #     return render(request, 'panchayat_details.html', {'employee': results})
 
 def environment_data(request):
-
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'environment_data.html')
 
 def infrastructure_data(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     with connection.cursor() as cursor:
@@ -384,6 +419,8 @@ def infrastructure_data(request):
     return render(request, 'infrastructure_data.html', {'asset_records':results, "user_id":user_id, "password":password})
 
 def show_date_infra(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = InfraDateForm()
@@ -417,6 +454,8 @@ def show_date_infra(request):
     })
 
 def show_loc_infra(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = InfraLocForm()
@@ -460,6 +499,8 @@ def show_loc_infra(request):
 
 
 def agriculture_data(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     with connection.cursor() as cursor:
@@ -468,6 +509,8 @@ def agriculture_data(request):
     return render(request, 'agriculture_data.html', {'land_records':results, "user_id":user_id, "password":password})
 
 def show_income_agri(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = AgriIncome()
@@ -499,6 +542,8 @@ def show_income_agri(request):
     })
 
 def show_edu_agri(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = AgriIncome()
@@ -526,6 +571,8 @@ def show_edu_agri(request):
     })
 
 def show_area_agri(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = AgriArea()
@@ -553,24 +600,37 @@ def login_page(request):
     return render(request, 'login_page.html')
 
 def census_data_login(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'census_data_login.html')
 
 def environment_data_login(request):
+
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'environment_data_login.html')
 
 def agriculture_data_login(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT crop_type, SUM(area_acres) FROM land_records GROUP BY crop_type")
         results = cursor.fetchall()
     return render(request, 'agriculture_data_login.html', {'land_records':results})
 
 def infrastructure_data_login(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'infrastructure_data_login.html')
 
 def government_monitor(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'government_monitor.html')
 
 def show_general_census(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     today = date.today()
@@ -603,6 +663,8 @@ def show_general_census(request):
     return render(request, "show_general_census.html", {"data": data, "user_id":user_id, "password":password})
 
 def census_data_func(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     print(userid)
@@ -624,6 +686,8 @@ def census_data_func(request):
     return render(request, "census_data.html", {"form":form, "records": records, "userid":userid, "password":password})
 
 def census_date_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = CensusYearForm()
@@ -653,6 +717,8 @@ def census_date_count(request):
     return render(request, "census_date_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_pop_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = CensusPopForm()
@@ -709,6 +775,8 @@ def census_pop_count(request):
     return render(request, "census_pop_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_edu_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = CensusPopForm()
@@ -742,6 +810,8 @@ def census_edu_count(request):
     return render(request, "census_edu_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_vacc_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = CensusPopForm()
@@ -776,6 +846,8 @@ def census_vacc_count(request):
     return render(request, "census_vacc_count.html", {"form": form, "records": records,"userid":userid, "password":password})
 
 def census_income_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get("userid")
     password = request.GET.get("password")
     form = CensusPopForm()
@@ -815,17 +887,68 @@ def login_view(request):
     print(f"Request Method: {request.method}")  # Check if POST or GET
     print(f"GET Data: {request.GET}")  # Print GET request data
     print(f"POST Data: {request.POST}")  # Print POST request data
+    if request.user.is_authenticated:
+        userid = request.user.username  # Get logged-in user's ID
+        print(userid)
+    
+        try:
+            with connection.cursor() as cursor:
+                # Fetch role from users table
+                query = "SELECT role FROM users WHERE user_id = %s;"
+                cursor.execute(query, [userid])
+                role_row = cursor.fetchone()
+
+                if role_row is None:
+                    return HttpResponse("User role not found.")
+
+                role = role_row[0]  # Extract role name (e.g., "CITIZEN")
+
+                if role == "CITIZEN":
+                    # Fetch citizen details
+                    query = """
+                    SELECT * FROM citizen, users 
+                    WHERE users.user_id = %s AND citizen.citizen_id = users.user_id;
+                    """
+                    cursor.execute(query, [userid])
+                    columns = [col[0] for col in cursor.description]
+                    citizen_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                    
+                    return render(request, "citizen_detail.html", {"data": citizen_data})
+
+                elif role == "MONITOR":
+                    # Fetch monitor details
+                    query = "SELECT * FROM users WHERE user_id = %s;"
+                    cursor.execute(query, [userid])
+                    columns = [col[0] for col in cursor.description]
+                    monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+                    
+                    return render(request, "government_monitor.html", {"data": monitor_data})
+
+                else:
+                    return HttpResponse("Access denied for this role.")
+
+        except Exception as e:
+            return HttpResponse(f"Error fetching role data: {e}")
+
+    
     if request.method == "POST":
         print('hello')
         userid = request.POST.get("userid")
         role = request.POST.get("role")
         password = request.POST.get("password")
-        
+        user = authenticate(username = userid, password = password)
+    if user is None:
+        return redirect("/api/login_page")
+    else:
+        login(request, user)
         if not userid or not role or not password:
             return HttpResponse("All fields are required.")
         
+        
         role_mapping = {"ADMIN": 1, "EMPLOYEE": 2, "CITIZEN": 3, "MONITOR": 4}
         role_id = role_mapping.get(role)
+        print(role_id)
         
         if role_id is None:
             return HttpResponse("Invalid role.")
@@ -865,7 +988,11 @@ def login_view(request):
         userid = request.GET.get("userid")
         role = request.GET.get("role")
         password = request.GET.get("password")
-
+        user = authenticate(username = userid, password = password)
+    if user is None:
+            return redirect("/api/login_page")
+    else:
+        login(request, user)
         if not userid or not role or not password:
             return HttpResponse("All fields are required.")
         
@@ -908,6 +1035,8 @@ def login_view(request):
             return HttpResponse(f"Error during login: {e}")
         
 def login_view_1(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == "POST":
         citizen_id = request.POST.get("citizen_id")
         
@@ -927,6 +1056,8 @@ def login_view_1(request):
     # return render(request, "login.html")  # Handle GET request
  
 def infrastructure_data_monitor(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == "POST":
         year = request.POST.get("year")
         location = request.POST.get("location")
@@ -953,6 +1084,8 @@ def infrastructure_data_monitor(request):
 
 
 def infra_gen(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     with connection.cursor() as cursor:
         query = """
         SELECT type, location, COUNT(*) as count, SUM(budget) as total_budget
@@ -966,6 +1099,8 @@ def infra_gen(request):
 
 
 def env_data_monitor(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == "POST":
         year = request.POST.get("year")
         month = request.POST.get("month")
@@ -991,6 +1126,8 @@ def env_data_monitor(request):
     return HttpResponse("Invalid request method.")
 
 def members(request, household_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         with connection.cursor() as cursor:
             query = """
@@ -1005,9 +1142,13 @@ def members(request, household_id):
         return HttpResponse(f"Error fetching household details: {e}")
     
 def certificates(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'certificates.html', {"citizen_id": citizen_id})
     
 def apply_certificate(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citizen_id = request.GET.get("citizen_id")  # Fetch from GET request
 
     if request.method == 'POST':
@@ -1096,6 +1237,8 @@ def apply_certificate(request):
     return render(request, 'apply_certificate.html', {'form': form})
 
 def apply_benefit(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citizen_id = request.GET.get("citizen_id")  # Fetch from GET request
 
     if request.method == 'POST':
@@ -1186,6 +1329,8 @@ def apply_benefit(request):
     return render(request, 'apply_benefit.html', {'form': form})
 
 def getcertificates(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citizen_id = request.GET.get("citizen_id")
     
     records = None
@@ -1201,6 +1346,8 @@ def getcertificates(request):
     return render(request, "getcertificates.html", {'records': records, "user_id": citizen_id, "password": password})
 
 def getbenefits(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citizen_id = request.GET.get("citizen_id")
     
     records = None
@@ -1214,3 +1361,7 @@ def getbenefits(request):
         password = user_row[0]  # Extract password from the database
 
     return render(request, "getbenefits.html", {'records': records, "user_id": citizen_id, "password": password})
+
+def logout_view(request):
+    logout(request)
+    return redirect("/api/login_page")

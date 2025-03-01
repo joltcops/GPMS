@@ -80,6 +80,9 @@
         <a href="{% url 'schemes' %}?user_id={{ user.user_id }}&password={{ user.password_user }}" class="button">
             View Scheme Details
         </a>
+        <a href="{% url 'logout' %}" class="button">
+            Logout
+        </a>
         {% endfor %}
     </div>
 </body>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Census List</title>
+</head>
+<body>
+    <h1>Census Data</h1>
+    <a href = "{% url 'add_census_data' %}"> Add Census Data </a>
+    <ul>
+    {% for cen in census_data %}
+        <li>
+                (Census ID: {{ cen.census_id }}) (Citizen ID: {{ cen.citizen_id }}) (Event Type: {{ cen.event_type }}) (Event Date: {{ cen.event_date }})
+                <a href="{% url 'cen_edit' cen.census_id %}" class="btn btn-warning">Edit</a>
+                <button onclick="confirmDelete('{{ cen.census_id }}')">Delete</button>
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
+<script>
+    function confirmDelete(cen_id) {
+        if (confirm(`Are you sure you want to delete ${cen_id}?`)) {
+            fetch(`/api/delete-cen/${cen_id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`cen-${cen_id}`).remove();
+                } else {
+                    
+                }
+            });
+        }
+    }
+    </script>

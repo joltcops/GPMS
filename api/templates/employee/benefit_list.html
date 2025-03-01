@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Benefits List</title>
+</head>
+<body>
+    <h1>Benefits List</h1>
+    <ul>
+    {% for benefit in benefits %}
+        <li>
+                (Application ID: {{ benefit.application_id }}) (Scheme ID: {{ benefit.scheme_id }}) (Applicant ID: {{ benefit.citizen_id }})
+            </a>
+            <a href="{% url 'benefit_approve' benefit.application_id %}" class="btn btn-warning">Approve</a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

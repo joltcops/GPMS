@@ -2,18 +2,64 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import citizenSerializer
-from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, env_data
+from .models import citizen, household, panchayat_employees, users, land_records, scheme_enrollments, welfare_schemes, assets, vaccinations, certificate, tax, census_data, env_data,benefit_application, certificate_application
 from rest_framework.views import APIView
 from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, TaxForm, EnvForm, HouseForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.db import connection
 from django.http import HttpResponseRedirect
+from datetime import date
+
+def generate_new_certapp_id():
+    last_application = certificate_application.objects.order_by('-application_id').first()
+    
+    if last_application:
+        last_id = last_application.application_id  # Example: 'C005'
+        last_num = int(last_id[2:])  # Extract numeric part -> 5
+        new_id = f"AP00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "AP001"  # If no records exist, start from 'BR001'
+
+    return new_id
+def generate_new_census_id():
+    last_census = census_data.objects.order_by('-census_id').first()
+    
+    if last_census:
+        last_id = last_census.census_id  # Example: 'C005'
+        last_num = int(last_id[7:])  # Extract numeric part -> 5
+        new_id = f"CENSUS00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "CENSUS001"  # If no records exist, start from 'BR001'
+
+    return new_id
+def generate_new_application_id():
+    last_application = benefit_application.objects.order_by('-application_id').first()
+    
+    if last_application:
+        last_id = last_application.application_id  # Example: 'BR005'
+        last_num = int(last_id[3:])  # Extract numeric part -> 5
+        new_id = f"BR00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "BR001"  # If no records exist, start from 'BR001'
+
+    return new_id
+def generate_new_citizen_id():
+    last_citizen = citizen.objects.order_by('-citizen_id').first()
+    
+    if last_citizen:
+        last_id = last_citizen.citizen_id  # Example: 'C005'
+        last_num = int(last_id[2:])  # Extract numeric part -> 5
+        new_id = f"C00{last_num + 1}"  # Increment and format -> 'BR006'
+    else:
+        new_id = "C001"  # If no records exist, start from 'BR001'
+
+    return new_id
 
 def add_citizen(request):
     if request.method == 'POST':
@@ -28,7 +74,8 @@ def add_citizen(request):
             educational_qualification=form.cleaned_data['educational_qualification']
             income=form.cleaned_data['income']
 
-            user_id=form.cleaned_data['citizen_id']
+
+            user_id=citizen_id
             role="CITIZEN"
             password_user='123456'
 
@@ -43,6 +90,24 @@ def add_citizen(request):
     else:
         form = CitizenForm()
     return render(request, 'employee/addcitizen.html', {'form': form})
+
+def add_census_data(request):
+    if request.method == 'POST':
+        form = CensusForm(request.POST)
+        if form.is_valid():
+            census_id = form.cleaned_data['census_id']
+            event_type = form.cleaned_data['event_type']
+            event_date = form.cleaned_data['event_date']
+            household_id = form.cleaned_data['household_id']
+            citizen_id = form.cleaned_data['citizen_id']
+
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO census_data(census_id, household_id, citizen_id, event_type, event_date) VALUES (%s, %s, %s, %s, %s)", [census_id, household_id, citizen_id, event_type, event_date])
+            form = CensusForm()
+    else:
+        form = CensusForm()
+    return render(request, 'employee/addcensusdata.html', {'form': form})
 
 def home_page(request):
     return render(request, 'index.html')
@@ -78,13 +143,72 @@ def mytax(request, citizen_id):
         taxes = cursor.fetchall()
     return render(request, 'citizen/tax.html', {'citizen': citi, 'taxes': taxes})
 
+
 def applycertificate(request, citizen_id):
-    citi = get_object_or_404(citizen, citizen_id=citizen_id)
-    return render(request, 'citizen/apply_cert.html', {'citizen': citi})
+    if request.method == 'POST':
+        form = CertificateForm(request.POST)
+        if form.is_valid():
+            application_id = form.cleaned_data['application_id']
+            certificate_type = form.cleaned_data['certificate_type']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)", [application_id, certificate_type, citizen_id, 'PENDING'])
+            form = CertificateForm()
+    else:
+        form = CertificateForm()
+    return render(request, 'citizen/applycertificate.html', {'form': form})
 
 def applybenefits(request, citizen_id):
-    citi = get_object_or_404(citizen, citizen_id=citizen_id)
-    return render(request, 'citizen/apply_bene.html', {'citizen': citi})
+    if request.method == 'POST':
+        form = BenefitForm(request.POST)
+        if form.is_valid():
+            application_id = form.cleaned_data['application_id']
+            scheme_id = form.cleaned_data['scheme_id']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)", [application_id, citizen_id, scheme_id, 'PENDING'])
+            form = BenefitForm()
+    else:
+        form = BenefitForm()
+    return render(request, 'citizen/apply_benefit.html', {'form': form})
+
+
+def view_cert_list(request):
+    certs = certificate_application.objects.raw('SELECT * FROM certificate_application WHERE status = %s', ['PENDING'])
+    return render(request, 'employee/certificate_list.html', {'certificates': certs})
+
+def certificate_approve(request, application_id):
+    if request.method == 'POST':
+        form = CertificateApprovalForm(request.POST)
+        if form.is_valid():
+            certificate_id = form.cleaned_data['certificate_id']
+            issue_date = form.cleaned_data['issue_date']
+            issuing_official = form.cleaned_data['issuing_official']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO certificate (certificate_id, certificate_type, applicant_id, issue_date, issuing_official) VALUES (%s, (SELECT certificate_type FROM certificate_application WHERE application_id = %s), (SELECT citizen_id FROM certificate_application WHERE application_id = %s), %s, %s)", [certificate_id, application_id, application_id, issue_date, issuing_official])
+            cursor.execute("UPDATE certificate_application SET status = %s WHERE application_id = %s", ['APPROVED', application_id])
+            form = CertificateApprovalForm()
+    else:
+        form = CertificateApprovalForm()
+    return render(request, 'employee/certificate_approve.html', {'form': form})
+
+def benefit_approve(request, application_id):
+    if request.method == 'POST':
+        form = BenefitApprovalForm(request.POST)
+        if form.is_valid():
+            enrollment_id = form.cleaned_data['enrollment_id']
+            enrollment_date = form.cleaned_data['enrollment_date']
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO scheme_enrollments (enrollment_id, citizen_id, scheme_id, enrollment_date) VALUES (%s, (SELECT citizen_id FROM benefit_application WHERE application_id = %s), (SELECT scheme_id FROM benefit_application WHERE application_id = %s), %s)", [enrollment_id, application_id, application_id, enrollment_date])
+            cursor.execute("UPDATE benefit_application SET status = %s WHERE application_id = %s", ['APPROVED', application_id])
+            form = BenefitApprovalForm()
+    else:
+        form = BenefitApprovalForm()
+    return render(request, 'employee/benefit_approve.html', {'form': form})
+    
+
+def view_bene_list(request):
+    bene = benefit_application.objects.raw('SELECT * FROM benefit_application WHERE status = %s', ['PENDING'])
+    return render(request, 'employee/benefit_list.html', {'benefits': bene})
+
 
 def logout(request):
     return render(request, 'logout.html')
@@ -199,6 +323,46 @@ class UserUpdateView(UpdateView):
     def get_success_url(self):
         return reverse('emp_citizen_detail', kwargs={'citizen_id': self.object.user_id})
 
+class SchemeUpdateView(UpdateView):
+    model = welfare_schemes
+    fields = ['name', 'description']
+    template_name = 'api/generic_form.html'
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        scheme_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE welfare_schemes
+                SET name = %s, description = %s
+                WHERE scheme_id = %s
+            ''', [data['name'], data['description'], scheme_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('welfare_schemes_list')
+    
+class CenUpdateView(UpdateView):
+    model = census_data
+    fields = ['event_type', 'event_date']
+    template_name = 'api/generic_form.html'
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        cen_id = self.kwargs['pk']
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                UPDATE census_data
+                SET event_type = %s, event_date = %s
+                WHERE census_id = %s
+            ''', [data['event_type'], data['event_date'], cen_id])
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('census_data_list')
+
     
 def add_land(request, citizen_id):
     if request.method == 'POST':
@@ -268,7 +432,7 @@ def assetslist(request):
     
 def add_assets(request):
     if request.method == 'POST':
-        form = AssetsForm(request.POST)
+        form = CensusForm(request.POST)
         if form.is_valid():
             asset_id = form.cleaned_data['asset_id']
             type = form.cleaned_data['type']
@@ -279,10 +443,27 @@ def add_assets(request):
             print(form.cleaned_data)
             cursor = connection.cursor()
             cursor.execute("INSERT INTO assets (asset_id, type, location, installation_date, budget) VALUES (%s, %s, %s, %s, %s)", [asset_id, type, location, installation_date, budget])
-            form = AssetsForm()
+            form = CensusForm()
     else:
-        form = AssetsForm()
+        form = CensusForm()
     return render(request, 'employee/addassets.html', {'form': form})
+
+def add_welfare_schemes(request):
+    if request.method == 'POST':
+        form = WelfareForm(request.POST)
+        if form.is_valid():
+            scheme_id = form.cleaned_data['scheme_id']
+            name = form.cleaned_data['name']
+            description = form.cleaned_data['description']
+            print("Form is valid")
+            print(form.cleaned_data)
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO welfare_schemes (scheme_id, name, description) VALUES (%s, %s, %s)", [scheme_id, name, description])
+            form = WelfareForm()
+    else:
+        form = WelfareForm()
+    return render(request, 'employee/addwelfareschemes.html', {'form': form})
+
 
 @require_POST
 def delete_asset(request, asset_id):
@@ -292,6 +473,23 @@ def delete_asset(request, asset_id):
         return JsonResponse({'status': 'success'})
     except vaccinations.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Asset record not found'}, status=404)
+    
+@require_POST
+def delete_scheme(request, scheme_id):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM welfare_schemes WHERE scheme_id = %s", [scheme_id])
+        return JsonResponse({'status': 'success'})
+    except welfare_schemes.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Welfare scheme not found'}, status=404)
+@require_POST
+def delete_cen(request, cen_id):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM census_data WHERE census_id = %s", [cen_id])
+        return JsonResponse({'status': 'success'})
+    except census_data.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Census data not found'}, status=404)
     
 class AssetUpdateView(UpdateView):
     model = assets
@@ -314,111 +512,3 @@ class AssetUpdateView(UpdateView):
     
     def get_success_url(self):
         return reverse('assetslist')
-    
-class EnvUpdateView(UpdateView):
-    model = env_data
-    fields = ['rainfall', 'aqi', 'gwl', 'date_of_record', 'temperature', 'humidity', 'wind_speed']
-    template_name = 'api/generic_form.html'
-    
-    def form_valid(self, form):
-        data = form.cleaned_data
-        record_id = self.kwargs['pk']
-        with connection.cursor() as cursor:
-            cursor.execute('''
-                UPDATE env_data
-                SET rainfall = %s, aqi = %s, gwl = %s, 
-                    date_of_record = %s, temperature = %s, 
-                    humidity = %s, wind_speed = %s
-                WHERE record_id = %s
-            ''', [data['rainfall'], data['aqi'], data['gwl'], data['date_of_record'],
-                  data['temperature'], data['humidity'], data['wind_speed'], record_id])
-
-        return HttpResponseRedirect(self.get_success_url())
-    
-    def get_success_url(self):
-        return reverse('env_list')
-    
-class HouseUpdateView(UpdateView):
-    model = household
-    fields = ['address', 'category', 'income']
-    template_name = 'api/generic_form.html'
-    
-    def form_valid(self, form):
-        data = form.cleaned_data
-        household_id = self.kwargs['pk']
-        with connection.cursor() as cursor:
-            cursor.execute('''
-                UPDATE household
-                SET address = %s, category = %s, income = %s
-                WHERE household_id = %s
-            ''', [data['address'], data['category'], data['income'], household_id])
-
-        return HttpResponseRedirect(self.get_success_url())
-    
-    def get_success_url(self):
-        return reverse('house_list')
-    
-def add_tax(request, citizen_id):
-    if request.method == 'POST':
-        form = TaxForm(request.POST)
-        if form.is_valid():
-            tax_id = form.cleaned_data['tax_id']
-            payer_id = citizen_id
-            type = form.cleaned_data['type']
-            amount = form.cleaned_data['amount']
-            due_date = form.cleaned_data['due_date']
-            paid_status = form.cleaned_data['paid_status']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO tax (tax_id, payer_id, type, amount, due_date, paid_status) VALUES (%s, %s, %s, %s, %s, %s)", [tax_id, payer_id, type, amount, due_date, paid_status])
-            form = TaxForm()
-    else:
-        form = TaxForm()
-    return render(request, 'employee/addtax.html', {'form': form})
-
-def env_list(request):
-    env = env_data.objects.raw('SELECT * FROM env_data')
-    return render(request, 'employee/envlist.html', {'env': env})
-
-def house_list(request):
-    houses = household.objects.raw('SELECT * FROM household')
-    return render(request, 'employee/houses.html', {'houses': houses})
-
-def add_env(request):
-    if request.method == 'POST':
-        form = EnvForm(request.POST)
-        if form.is_valid():
-            record_id = form.cleaned_data['record_id']
-            rainfall = form.cleaned_data['rainfall']
-            aqi = form.cleaned_data['aqi']
-            gwl = form.cleaned_data['gwl']
-            date_of_record = form.cleaned_data['date_of_record']
-            temperature = form.cleaned_data['temperature']
-            humidity = form.cleaned_data['humidity']
-            wind_speed = form.cleaned_data['wind_speed']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO env_data (record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", [record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed])
-            form = EnvForm()
-    else:
-        form = EnvForm()
-    return render(request, 'employee/addenv.html', {'form': form})
-
-def add_house(request):
-    if request.method == 'POST':
-        form = HouseForm(request.POST)
-        if form.is_valid():
-            household_id = form.cleaned_data['household_id']
-            address = form.cleaned_data['address']
-            category = form.cleaned_data['category']
-            income = form.cleaned_data['income']
-            print("Form is valid")
-            print(form.cleaned_data)
-            cursor = connection.cursor()
-            cursor.execute("INSERT INTO household (household_id, address, category, income) VALUES (%s, %s, %s, %s)", [household_id, address, category, income])
-            form = HouseForm()
-    else:
-        form = HouseForm()
-    return render(request, 'employee/addhouse.html', {'form': form})

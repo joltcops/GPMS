@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welfare schemes</title>
+</head>
+<body>
+    <h1>Welfare schemes</h1>
+    <a href="{% url 'add_welfare_schemes' %}">Add</a>
+    <ul>
+    {% for scheme in schemes %}
+        <li>
+                (Scheme ID: {{ scheme.scheme_id }}) (Name: {{ scheme.name }}) (Description: {{ scheme.description }})
+                <a href="{% url 'scheme_edit' scheme.scheme_id %}" class="btn btn-warning">Edit</a>
+                <button onclick="confirmDelete('{{ scheme.scheme_id }}')">Delete</button>
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
+<script>
+    function confirmDelete(scheme_id) {
+        if (confirm(`Are you sure you want to delete ${scheme_id}?`)) {
+            fetch(`/api/delete-scheme/${scheme_id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`scheme-${scheme_id}`).remove();
+                } else {
+                    
+                }
+            });
+        }
+    }
+    </script>

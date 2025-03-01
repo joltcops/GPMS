@@ -1,22 +1,49 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
     <title>Taxes</title>
 </head>
 <body>
-    <h1>My Tax Payments</h1>
-    <div>
-        {% for tax in taxes %}
-            <div class="certificate-box">
-                <p><strong>Tax ID:</strong> {{ tax.0 }}</p>
-                <p><strong>Tax Type:</strong> {{ tax.2 }}</p>
-                <p><strong>Amount:</strong> {{ tax.3 }}</p>
-                <p><strong>Due Date:</strong> {{ tax.4 }}</p>
-                <p><strong>Status:</strong> {{ tax.5 }}</p>
-            </div>
-        {% endfor %}
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'citizen_home' citizen.citizen_id %}">Home</a>
+            <a href="{% url 'citizen_detail' citizen.citizen_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
     </div>
+
+    <h1>My Tax Payments</h1>
+
+    <div class="certificate-container">
+        <table class="certificate-table">
+            <thead>
+                <tr>
+                    <th>Tax ID</th>
+                    <th>Tax Type</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tax in taxes %}
+                <tr>
+                    <td>{{ tax.0 }}</td>
+                    <td>{{ tax.2 }}</td>
+                    <td>{{ tax.3 }}</td>
+                    <td>{{ tax.4 }}</td>
+                    <td>{{ tax.5 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>

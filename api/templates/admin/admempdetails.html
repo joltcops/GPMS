@@ -1,78 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>Employee Details</title>
-    </head>
-    <body>
-        <h1>Employee Details</h1>
+<head>
+    <title>Employee Details</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
+</head>
+<body>
 
-<div class="container">
+    <h1>Employee Details</h1>
 
-  <!-- Personal Information -->
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h2>Personal Information</h2>
-      <a href="{% url 'employee_edit' emp.employee_id %}" class="btn btn-warning">Edit</a>
-    </div>
-    <div class="card-body">
-      <dl class="row">
-        <dt class="col-sm-3">ID</dt>
-        <dd class="col-sm-9">{{ emp.employee_id }}</dd>
-        <dt class="col-sm-3">Citizen</dt>
-        <dd class="col-sm-9">{{ emp.citizen_id }}</dd>
-        <dt class="col-sm-3">Role</dt>
-        <dd class="col-sm-9">{{ emp.role }}</dd>
-        <dt class="col-sm-3">Department</dt>
-        <dd class="col-sm-9">{{ emp.department }}</dd>
-      </dl>
-    </div>
-  </div>
+    <div class="container">
 
-  <!--User info-->
+        <!-- Personal Information -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>Personal Information</h2>
+                <a href="{% url 'employee_edit' emp.employee_id %}">Edit</a>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> {{ emp.employee_id }}</p>
+                <p><strong>Citizen:</strong> {{ emp.citizen_id }}</p>
+                <p><strong>Role:</strong> {{ emp.role }}</p>
+                <p><strong>Department:</strong> {{ emp.department }}</p>
+            </div>
+        </div>
 
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h2>User Information</h2>
-      <a href="{% url 'empuser_edit' user.user_id %}" class="btn btn-warning">Edit</a>
-    </div>
-    <div class="card-body">
-      <dl class="row">
-        <dt class="col-sm-3">UserID</dt>
-        <dd class="col-sm-9">{{ user.user_id }}</dd>
-        <dt class="col-sm-3">Password</dt>
-        <dd class="col-sm-9">{{ user.password_user }}</dd>
-      </dl>
-    </div>
-</div>
-</body>
-</html>
+        <!-- User Information -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>User Information</h2>
+                <a href="{% url 'empuser_edit' user.user_id %}">Edit</a>
+            </div>
+            <div class="card-body">
+                <p><strong>User ID:</strong> {{ user.user_id }}</p>
+                <p><strong>Password:</strong> {{ user.password_user }}</p>
+            </div>
+        </div>
 
-<!--Citizen details-->
+        <!-- Citizen Information -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>Citizen Details</h2>
+                <a href="{% url 'empcit_edit' cit.citizen_id %}">Edit</a>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> {{ cit.citizen_id }}</p>
+                <p><strong>Name:</strong> {{ cit.name }}</p>
+                <p><strong>Gender:</strong> {{ cit.gender }}</p>
+                <p><strong>Date of Birth:</strong> {{ cit.dob }}</p>
+                <p><strong>Educational Qualification:</strong> {{ cit.educational_qualification }}</p>
+                <p><strong>Parent:</strong> {{ cit.parent_id }}</p>
+                <p><strong>Income:</strong> {{ cit.income }}</p>
+            </div>
+        </div>
 
-<div class="card mb-4">
-  <div class="card-header">
-    <h2>Citizen Details</h2>
-    <a href="{% url 'empcit_edit' cit.citizen_id %}" class="btn btn-warning">Edit</a>
-  </div>
-  <div class="card-body">
-    <dl class="row">
-      <dt class="col-sm-3">ID</dt>
-        <dd class="col-sm-9">{{ cit.citizen_id }}</dd>
-        <dt class="col-sm-3">Name</dt>
-        <dd class="col-sm-9">{{ cit.name }}</dd>
-        <dt class="col-sm-3">Gender</dt>
-        <dd class="col-sm-9">{{ cit.gender }}</dd>
-        <dt class="col-sm-3">Date of Birth</dt>
-        <dd class="col-sm-9">{{ cit.dob }}</dd>
-        <dt class="col-sm-3">Educational Qualification</dt>
-        <dd class="col-sm-9">{{ cit.educational_qualification }}</dd>
-        <dt class="col-sm-3">Parent</dt>
-        <dd class="col-sm-9">{{ cit.parent_id }}</dd>
-        <dt class="col-sm-3">Income</dt>
-        <dd class="col-sm-9">{{ cit.income }}</dd>
-    </dl>
-  </div>
     </div>
 
 </body>
 </html>
-

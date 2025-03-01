@@ -1,25 +1,48 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Employee List</title>
+    <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-    <h1>Employee List</h1>
-    <ul>
-    {% for employee in employees %}
-        <li>
-            <a href="{% url 'adm_employee_detail' employee.employee_id %}">
-                (ID: {{ employee.employee_id }}) (User ID: {{ employee.citizen_id }})
-            </a>
-            <button onclick="confirmDelete('{{ employee.employee_id }}')">Delete</button>
-        </li>
-    {% endfor %}
-    </ul>
+
+    <div class="citizen-list-container">
+        <h1>Employee List</h1>
+        <table class="citizen-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                    <tr id="employee-{{ employee.employee_id }}">
+                        <td>{{ employee.employee_id }}</td>
+                        <td>
+                            <a href="{% url 'adm_employee_detail' employee.employee_id %}">
+                                {{ employee.citizen_id }}
+                            </a>
+                        </td>
+                        <td>
+                            <button class="delete-button" onclick="confirmDelete('{{ employee.employee_id }}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
+
 <script>
     function confirmDelete(employeeId) {
-        if (confirm(`Are you sure you want to delete ${employeeId}?`)) {
+        if (confirm(`Are you sure you want to delete Employee ID: ${employeeId}?`)) {
             fetch(`/api/delete-employee/${employeeId}/`, {
                 method: 'POST',
                 headers: {
@@ -37,6 +60,4 @@
             });
         }
     }
-    </script>
-
-
+</script>

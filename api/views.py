@@ -263,7 +263,7 @@ def add_citizen(request, employee_id):
 
                     user_id = citizen_id
                     role = "CITIZEN"
-                    password_user = '123456'  # Default password (should be changed by user)
+                    password_user = '123456$@'  # Default password (should be changed by user)
 
                     # **Step 1: Create user in Django's User model**
                     user = create_user(user_id, password_user, role)

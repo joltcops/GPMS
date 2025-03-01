@@ -210,6 +210,8 @@ def citizen_detail(request, citizen_id):
     citi = get_object_or_404(citizen, citizen_id=citizen_id)
     return render(request, 'citizen_detail.html', {'citizen': citi})
 
+
+
 def panchayat_details(request):
     employee = panchayat_employees.objects.all()
     with connection.cursor() as cursor:

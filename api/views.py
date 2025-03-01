@@ -16,6 +16,9 @@ from datetime import date
 import re
 from django.db import IntegrityError, transaction
 from django.contrib import messages
+from django.contrib.auth.models import User as auth_user
+from django.contrib.auth.models import User
+from django.contrib.auth import  authenticate, login, logout
 
 def generate_new_citizen_id():
     last_applications = citizen.objects.values_list('citizen_id', flat=True)
@@ -228,7 +231,22 @@ def generate_new_panchayat_employees_id():
 
     return new_id
 
+def create_user(username, password, role):
+    """
+    Creates a user in Django's built-in User model.
+    """
+    try:
+        user = User.objects.create_user(username=username, password=password)
+        user.is_active = True  # Activate the user
+        user.save()
+        return user
+    except IntegrityError:
+        return None  # Handle duplicate username case
+
 def add_citizen(request, employee_id):
+    if request.user.is_anonymous:
+        return redirect("/api/login_page")
+    
     if request.method == 'POST':
         form = CitizenForm(request.POST)
         if form.is_valid():
@@ -245,8 +263,15 @@ def add_citizen(request, employee_id):
 
                     user_id = citizen_id
                     role = "CITIZEN"
-                    password_user = '123456'
+                    password_user = '123456'  # Default password (should be changed by user)
 
+                    # **Step 1: Create user in Django's User model**
+                    user = create_user(user_id, password_user, role)
+                    if user is None:
+                        form.add_error(None, "User with this ID already exists in the system.")
+                        return render(request, 'employee/addcitizen.html', {'form': form})
+
+                    # **Step 2: Insert into the custom users & citizen table**
                     with connection.cursor() as cursor:
                         cursor.execute("INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)", 
                                        [user_id, role, password_user])
@@ -254,7 +279,6 @@ def add_citizen(request, employee_id):
                                        [citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income])
                 
                 messages.success(request, 'Citizen added successfully.')
-                # form = CitizenForm()  # Reset the form after successful submission
                 return redirect('emp_home', emp_id=employee_id)
 
             except IntegrityError as e:
@@ -270,6 +294,8 @@ def add_citizen(request, employee_id):
     return render(request, 'employee/addcitizen.html', {'form': form})
 
 def add_census_data(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = CensusForm(request.POST)
         if form.is_valid():
@@ -301,21 +327,31 @@ def add_census_data(request):
     return render(request, 'employee/addcensusdata.html', {'form': form})
 
 def home_page(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     return render(request, 'index.html')
 
 def citizen_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citizens = citizen.objects.raw('SELECT * FROM citizen')
     return render(request, 'employee/citizen_list.html', {'citizens': citizens})
 
 def citizen_detail(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     return render(request, 'citizen/citizen_detail.html', {'citizen': citi})
 
 def cithome(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     return render(request, 'citizen/citizenhome.html', {'citizen': citi})
 
 def mycertificate(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM certificate WHERE applicant_id = %s', [citizen_id])
@@ -323,11 +359,15 @@ def mycertificate(request, citizen_id):
     return render(request, 'citizen/certificate.html', {'citizen': citi, 'certificates': certs})
 
 def mybenefits(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     schemes = scheme_enrollments.objects.raw('SELECT * FROM scheme_enrollments WHERE citizen_id = %s', [citizen_id])
     return render(request, 'citizen/benefits.html', {'citizen': citi, 'schemes': schemes})
 
 def mytax(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM tax WHERE payer_id = %s', [citizen_id])
@@ -336,6 +376,8 @@ def mytax(request, citizen_id):
 
 
 def applycertificate(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = CertificateForm(request.POST)
         if form.is_valid():
@@ -370,6 +412,8 @@ def applycertificate(request, citizen_id):
 
 
 def applybenefits(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = BenefitForm(request.POST)
         if form.is_valid():
@@ -404,11 +448,15 @@ def applybenefits(request, citizen_id):
     return render(request, 'citizen/apply_benefit.html', {'form': form})
 
 def view_cert_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     certs = certificate_application.objects.raw('SELECT * FROM certificate_application WHERE status = %s', ['PENDING'])
     return render(request, 'employee/certificate_list.html', {'certificates': certs})
 
 
 def certificate_approve(request, application_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = CertificateApprovalForm(request.POST)
         if form.is_valid():
@@ -450,6 +498,8 @@ def certificate_approve(request, application_id):
     return render(request, 'employee/certificate_approve.html', {'form': form, 'application_id': application_id})
 
 def benefit_approve(request, application_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = BenefitApprovalForm(request.POST)
         if form.is_valid():
@@ -489,23 +539,33 @@ def benefit_approve(request, application_id):
     return render(request, 'employee/benefit_approve.html', {'form': form, 'application_id': application_id})
     
 def view_bene_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     bene = benefit_application.objects.raw('SELECT * FROM benefit_application WHERE status = %s', ['PENDING'])
     return render(request, 'employee/benefit_list.html', {'benefits': bene})
 
 def logout(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'logout.html')
 
 def emphome(request, emp_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE employee_id = %s', [emp_id])[0]
     return render(request, 'employee/emphome.html', {'emp': emp})
 
 def empdetail(request, emp_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE employee_id = %s', [emp_id])[0]
     cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [emp.citizen_id.citizen_id])[0]
     print(emp.employee_id)
     return render(request, 'employee/empdetail.html', {'emp': emp, 'cit': cit})
 
 def empcitdetails(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     house = household.objects.raw('SELECT * FROM household join citizen using (household_id) WHERE citizen_id = %s', [citizen_id])[0]
     land = land_records.objects.raw('SELECT * FROM land_records WHERE citizen_id = %s', [citizen_id])
@@ -519,6 +579,7 @@ def empcitdetails(request, citizen_id):
     return render(request, 'employee/empcitdetails.html', {'citizen': citi, 'household': house, 'land': land, 'senroll': senroll, 'vaccinations': vac, 'user': user, 'members': members, 'taxes': taxes})
 
 class CitizenUpdateView(UpdateView):
+    
     model = citizen
     fields = ['name', 'gender', 'dob', 'educational_qualification', 'household_id', 'parent_id', 'income']
     template_name = 'api/generic_form.html'
@@ -647,6 +708,8 @@ class CenUpdateView(UpdateView):
 
 
 def add_land(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = LandForm(request.POST)
         if form.is_valid():
@@ -677,6 +740,8 @@ def add_land(request, citizen_id):
     
     return render(request, 'employee/addland.html', {'form': form, 'citizen_id': citizen_id})
 def add_vaccine(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = VaccineForm(request.POST)
         if form.is_valid():
@@ -709,6 +774,8 @@ def add_vaccine(request, citizen_id):
 
 @require_POST
 def delete_land(request, land_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM land_records WHERE land_id = %s", [land_id])
@@ -718,6 +785,8 @@ def delete_land(request, land_id):
     
 @require_POST
 def delete_vaccine(request, vaccination_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM vaccinations WHERE vaccination_id = %s", [vaccination_id])
@@ -725,21 +794,42 @@ def delete_vaccine(request, vaccination_id):
     except vaccinations.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Vaccine record not found'}, status=404)
     
+def remove_user(user_id):
+    """
+    Removes a user from Django's built-in User model.
+    """
+    try:
+        user = User.objects.get(username=user_id)
+        user.delete()
+        return True
+    except User.DoesNotExist:
+        return False
+
 @require_POST
 def delete_citizen(request, citizen_id):
+    if request.user.is_anonymous:
+        return redirect("/api/login_page")
+    
     try:
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM users WHERE user_id = %s", [citizen_id])
-        
-        return JsonResponse({'success': True})
+
+        # Remove the user from Django's built-in User model
+        user_deleted = remove_user(citizen_id)
+
+        return JsonResponse({'success': True, 'user_deleted': user_deleted})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
     
 def assetslist(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     asset = assets.objects.raw('SELECT * FROM assets')
     return render(request, 'employee/assets_list.html', {'assets': asset})
 
 def add_assets(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = AssetsForm(request.POST)
         if form.is_valid():
@@ -771,6 +861,8 @@ def add_assets(request):
     return render(request, 'employee/addassets.html', {'form': form})
 
 def add_welfare_schemes(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = WelfareForm(request.POST)
         if form.is_valid():
@@ -801,6 +893,8 @@ def add_welfare_schemes(request):
 
 @require_POST
 def delete_asset(request, asset_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM assets WHERE asset_id = %s", [asset_id])
@@ -810,6 +904,8 @@ def delete_asset(request, asset_id):
     
 @require_POST
 def delete_scheme(request, scheme_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM welfare_schemes WHERE scheme_id = %s", [scheme_id])
@@ -818,6 +914,8 @@ def delete_scheme(request, scheme_id):
         return JsonResponse({'status': 'error', 'message': 'Welfare scheme not found'}, status=404)
 @require_POST
 def delete_cen(request, cen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM census_data WHERE census_id = %s", [cen_id])
@@ -848,10 +946,14 @@ class AssetUpdateView(UpdateView):
         return reverse('assetslist')
 
 def census_data_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     census = census_data.objects.raw('SELECT * FROM census_data')
     return render(request, 'employee/census_data_list.html', {'census_data': census})
 
 def welfare_schemes_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     schemes = welfare_schemes.objects.raw('SELECT * FROM welfare_schemes')
     return render(request, 'employee/welfare_schemes_list.html', {'schemes': schemes})
 
@@ -899,6 +1001,8 @@ class HouseUpdateView(UpdateView):
         return reverse('house_list')
 
 def add_tax(request, citizen_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = TaxForm(request.POST)
         if form.is_valid():
@@ -931,14 +1035,20 @@ def add_tax(request, citizen_id):
     return render(request, 'employee/addtax.html', {'form': form, 'citizen_id': citizen_id})
 
 def env_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     env = env_data.objects.raw('SELECT * FROM env_data')
     return render(request, 'employee/envlist.html', {'env': env})
 
 def house_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     houses = household.objects.raw('SELECT * FROM household')
     return render(request, 'employee/houses.html', {'houses': houses})
 
 def add_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = EnvForm(request.POST)
         if form.is_valid():
@@ -973,6 +1083,8 @@ def add_env(request):
     return render(request, 'employee/addenv.html', {'form': form})
 
 def add_house(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == 'POST':
         form = HouseForm(request.POST)
         if form.is_valid():
@@ -1003,20 +1115,31 @@ def add_house(request):
     return render(request, 'employee/addhouse.html', {'form': form})
 
 def add_employee(request):
+    if request.user.is_anonymous:
+        return redirect("/api/login_page")
+
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
         if form.is_valid():
             try:
                 with transaction.atomic():
                     employee_id = generate_new_panchayat_employees_id()
+                    print(employee_id)
                     citizen_id = form.cleaned_data['citizen_id']
                     department = form.cleaned_data['department']
                     role = form.cleaned_data['role']
-                    
+                    password = '123456$@'  # Default password
+
+                    # Create user in Django's User model
+                    user = create_user(employee_id, password, role)
+                    if not user:
+                        form.add_error(None, 'A user with this ID already exists.')
+                        raise IntegrityError("User creation failed due to duplicate ID.")
+
                     with connection.cursor() as cursor:
                         cursor.execute(
                             "INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)",
-                            [employee_id, role, '123456']
+                            [employee_id, role, password]
                         )
                         cursor.execute(
                             "INSERT INTO panchayat_employees (employee_id, citizen_id, role, department) VALUES (%s, %s, %s, %s)",
@@ -1024,6 +1147,8 @@ def add_employee(request):
                         )
 
                 messages.success(request, 'Employee added successfully.')
+                return redirect('admin_home')  # Redirect after successful addition
+
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('employee_id', 'An employee with this ID already exists.')
@@ -1037,19 +1162,27 @@ def add_employee(request):
     return render(request, 'admin/addemployee.html', {'form': form})
 
 def admhome(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'admin/admhome.html')
 
 def admempdetails(request, employee_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE employee_id = %s', [employee_id])[0]
     cit = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [emp.citizen_id.citizen_id])[0]
     user = users.objects.raw('SELECT * FROM users WHERE user_id = %s', [employee_id])[0]
     return render(request, 'admin/admempdetails.html', {'emp': emp, 'cit': cit, 'user': user})
 
 def employee_list(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees')
     return render(request, 'admin/employee_list.html', {'employees': emp})
 
 def delete_employee(request, employee_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM users WHERE user_id = %s", [employee_id])
@@ -1127,22 +1260,32 @@ class EmpCitUpdateView(UpdateView):
     
 
 def about(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'about.html')
 
 def contact(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'contact.html')
 
 def getschemes(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     schemes=welfare_schemes.objects.all()
     return render(request, 'govmonitor/schemes.html', {'schemes': schemes, "user_id":user_id, "password":password})
 
 def getschemes_gen(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     schemes=welfare_schemes.objects.all()
     return render(request, 'general/schemes_gen.html', {'schemes': schemes})
 
 def show_date_scheme(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1162,6 +1305,8 @@ def show_date_scheme(request):
     return render(request, "govmonitor/show_date_scheme.html", {"form":form, "records":records, "userid":userid, "password":password})
 
 def show_stat_scheme(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1185,12 +1330,16 @@ def show_stat_scheme(request):
 
 
 def panchayat_details(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT name, role, department FROM citizen, panchayat_employees WHERE citizen.citizen_id=panchayat_employees.citizen_id")  # Query only required fields
         results = cursor.fetchall()
     return render(request, 'general/panchayat_details.html', {'employee': results})
 
 def show_general_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")  # Retrieve user_id from query parameters
     password = request.GET.get("password")
     with connection.cursor() as cursor:
@@ -1219,6 +1368,8 @@ def show_general_env(request):
 
 
 def show_general_env_1(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT AVG(rainfall), AVG(aqi), AVG(gwl), AVG(temperature),
@@ -1245,6 +1396,8 @@ def show_general_env_1(request):
 
 
 def show_date_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1268,6 +1421,8 @@ def show_date_env(request):
     return render(request, "govmonitor/show_date_env.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def show_val_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1295,6 +1450,8 @@ def show_val_env(request):
     return render(request, "govmonitor/show_val_env.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def show_above_avg_env(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1326,6 +1483,8 @@ def show_above_avg_env(request):
     return render(request, "govmonitor/show_above_avg_env.html", {"parameters": parameters, "selected_param": selected_param, "records": records, "userid":userid, "password":password})
 
 def infrastructure_data(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     with connection.cursor() as cursor:
@@ -1334,6 +1493,8 @@ def infrastructure_data(request):
     return render(request, 'govmonitor/infrastructure_data.html', {'asset_records':results, "user_id":user_id, "password":password})
 
 def show_date_infra(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1370,6 +1531,8 @@ def show_date_infra(request):
     })
 
 def show_loc_infra(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1416,6 +1579,8 @@ def show_loc_infra(request):
 
 
 def agriculture_data(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     with connection.cursor() as cursor:
@@ -1424,6 +1589,8 @@ def agriculture_data(request):
     return render(request, 'govmonitor/agriculture_data.html', {'land_records':results, "user_id":user_id, "password":password})
 
 def show_income_agri(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1458,6 +1625,8 @@ def show_income_agri(request):
     })
 
 def show_edu_agri(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1488,6 +1657,8 @@ def show_edu_agri(request):
     })
 
 def show_area_agri(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1515,24 +1686,36 @@ def show_area_agri(request):
 
 
 def login_page(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     return render(request, 'general/login_page.html')
 
 def census_data_login(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'govmonitor/census_data_login.html')
 
 def environment_data_login(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'environment_data_login.html')
 
 def agriculture_data_login(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT crop_type, SUM(area_acres) FROM land_records GROUP BY crop_type")
         results = cursor.fetchall()
     return render(request, 'general/agriculture_data_login.html', {'land_records':results})
 
 def government_monitor(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     return render(request, 'govmonitor/government_monitor.html')
 
 def show_general_census(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     user_id = request.GET.get("user_id")
     password = request.GET.get("password")
     today = date.today()
@@ -1565,6 +1748,8 @@ def show_general_census(request):
     return render(request, "govmonitor/show_general_census.html", {"data": data, "user_id":user_id, "password":password})
 
 def census_data_func(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1584,6 +1769,8 @@ def census_data_func(request):
     return render(request, "govmonitor/census_data.html", {"form":form, "records": records, "userid":userid, "password":password})
 
 def census_date_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1614,6 +1801,8 @@ def census_date_count(request):
     return render(request, "govmonitor/census_date_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_pop_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1671,6 +1860,8 @@ def census_pop_count(request):
     return render(request, "govmonitor/census_pop_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_edu_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1705,6 +1896,8 @@ def census_edu_count(request):
     return render(request, "govmonitor/census_edu_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_vacc_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1740,6 +1933,8 @@ def census_vacc_count(request):
     return render(request, "govmonitor/census_vacc_count.html", {"form": form, "records": records, "userid":userid, "password":password})
 
 def census_income_count(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     userid = request.GET.get('userid')
     password = request.GET.get('password')
 
@@ -1780,21 +1975,71 @@ def login_view(request):
     print(f"Request Method: {request.method}")  # Check if POST or GET
     print(f"GET Data: {request.GET}")  # Print GET request data
     print(f"POST Data: {request.POST}")  # Print POST request data
+    if request.user.is_authenticated:
+        userid = request.user.username  # Get logged-in user's ID
+        print(userid)
+    
+        try:
+            with connection.cursor() as cursor:
+                # Fetch role from users table
+                query = "SELECT role FROM users WHERE user_id = %s;"
+                cursor.execute(query, [userid])
+                role_row = cursor.fetchone()
+
+                print(userid)
+
+                if role_row is None:
+                    return HttpResponse("User role not found.")
+
+                role = role_row[0]  # Extract role name (e.g., "CITIZEN")
+
+                if role == "CITIZEN":
+                    # Fetch citizen details
+                    citi = citizen.objects.raw('SELECT * from citizen where citizen_id = %s', [userid])[0]
+                    
+                    return render(request, "citizen/citizenhome.html", {"citizen": citi})
+
+                elif role == "MONITOR":
+                    # Fetch monitor details
+                    query = "SELECT * FROM users WHERE user_id = %s;"
+                    cursor.execute(query, [userid])
+                    columns = [col[0] for col in cursor.description]
+                    monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+                    return render(request, "govmonitor/government_monitor.html", {"data": monitor_data})
+                elif role == "EMPLOYEE":
+                    emp = panchayat_employees.objects.raw("select * from panchayat_employees where employee_id = %s", [userid])[0]
+                    return render(request, 'employee/emphome.html', {'emp':emp})
+                elif role == "ADMIN":
+                    return render(request, 'admin/admhome.html')
+                else:
+                    return HttpResponse("Access denied for this role.")
+
+        except Exception as e:
+            return HttpResponse(f"Error fetching role data: {e}")
+
+    
     if request.method == "POST":
         print('hello')
         userid = request.POST.get("userid")
         role = request.POST.get("role")
         password = request.POST.get("password")
-       
+        user = authenticate(username = userid, password = password)
+    if user is None:
+        return redirect("/api/login_page")
+    else:
+        login(request, user)
         if not userid or not role or not password:
             return HttpResponse("All fields are required.")
-       
+        
+        
         role_mapping = {"ADMIN": 1, "EMPLOYEE": 2, "CITIZEN": 3, "MONITOR": 4}
         role_id = role_mapping.get(role)
-       
+        print(role_id)
+        
         if role_id is None:
             return HttpResponse("Invalid role.")
-       
+        
         try:
             with connection.cursor() as cursor:
                 query = """
@@ -1802,14 +2047,11 @@ def login_view(request):
                 """
                 cursor.execute(query, [userid, password, role])
                 user = cursor.fetchone()
-               
+                
                 if user:
                     if role_id == 3:
-                        query = """
-                        SELECT * FROM citizen,users WHERE user_id = %s and citizen.citizen_id = users.user_id;
-                        """
-                        citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [userid])[0]
-                        return render(request, 'citizen/citizenhome.html', {'citizen': citi})
+                        citi = citizen.objects.raw('SELECT * from citizen where citizen_id = %s', [userid])[0]
+                        return render(request, "citizen/citizenhome.html", {"citizen": citi})
                     elif role_id == 4:
                         query = """
                         SELECT * FROM users WHERE user_id = %s;
@@ -1819,8 +2061,8 @@ def login_view(request):
                         monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
                         return render(request, "govmonitor/government_monitor.html", {"data": monitor_data})
                     elif role_id == 2:
-                         emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE employee_id = %s', [userid])[0]
-                         return render(request, 'employee/emphome.html', {'emp': emp})
+                        emp = panchayat_employees.objects.raw("select * from panchayat_employees where employee_id = %s", [userid])[0]
+                        return render(request, 'employee/emphome.html', {'emp':emp})
                     elif role_id == 1:
                         return render(request, 'admin/admhome.html')
                     else:
@@ -1833,16 +2075,20 @@ def login_view(request):
         userid = request.GET.get("userid")
         role = request.GET.get("role")
         password = request.GET.get("password")
-
+        user = authenticate(username = userid, password = password)
+    if user is None:
+            return redirect("/api/login_page")
+    else:
+        login(request, user)
         if not userid or not role or not password:
             return HttpResponse("All fields are required.")
-       
+        
         role_mapping = {"ADMIN": 1, "EMPLOYEE": 2, "CITIZEN": 3, "MONITOR": 4}
         role_id = role_mapping.get(role)
-       
+        
         if role_id is None:
             return HttpResponse("Invalid role.")
-       
+        
         try:
             with connection.cursor() as cursor:
                 query = """
@@ -1850,16 +2096,11 @@ def login_view(request):
                 """
                 cursor.execute(query, [userid, password, role])
                 user = cursor.fetchone()
-               
+                
                 if user:
                     if role_id == 3:
-                        query = """
-                        SELECT * FROM citizen,users WHERE user_id = %s and citizen.citizen_id = users.user_id;
-                        """
-                        cursor.execute(query, [userid])
-                        columns = [col[0] for col in cursor.description]
-                        citizen_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-                        return render(request, "citizen_detail.html", {"data": citizen_data})
+                        citi = citizen.objects.raw('SELECT * from citizen where citizen_id = %s', [userid])[0]
+                        return render(request, "citizen/citizenhome.html", {"citizen": citi})
                     elif role_id == 4:
                         query = """
                         SELECT * FROM users WHERE user_id = %s;
@@ -1868,14 +2109,20 @@ def login_view(request):
                         columns = [col[0] for col in cursor.description]
                         monitor_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
                         return render(request, "govmonitor/government_monitor.html", {"data": monitor_data})
+                    elif role_id == 2:
+                        emp = panchayat_employees.objects.raw("select * from panchayat_employees where employee_id = %s", [userid])[0]
+                        return render(request, 'employee/emphome.html', {'emp':emp})
+                    elif role_id == 1:
+                        return render(request, 'admin/admhome.html')
                     else:
                         return HttpResponse("Access denied for this role.")
                 else:
                     return HttpResponse("Invalid credentials.")
         except Exception as e:
             return HttpResponse(f"Error during login: {e}")
- 
 def infrastructure_data_monitor(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == "POST":
         year = request.POST.get("year")
         location = request.POST.get("location")
@@ -1902,6 +2149,8 @@ def infrastructure_data_monitor(request):
 
 
 def infra_gen(request):
+    # if(request.user.is_anonymous):
+    #     return redirect("/api/login_page")
     with connection.cursor() as cursor:
         query = """
         SELECT type, location, COUNT(*) as count, SUM(budget) as total_budget
@@ -1915,6 +2164,8 @@ def infra_gen(request):
 
 
 def env_data_monitor(request):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     if request.method == "POST":
         year = request.POST.get("year")
         month = request.POST.get("month")
@@ -1940,6 +2191,8 @@ def env_data_monitor(request):
     return HttpResponse("Invalid request method.")
 
 def members(request, household_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
     try:
         with connection.cursor() as cursor:
             query = """
@@ -1952,3 +2205,8 @@ def members(request, household_id):
         return render(request, "members.html", {"members": members})
     except Exception as e:
         return HttpResponse(f"Error fetching household details: {e}")
+
+def logout_view(request):
+    request.session.flush() 
+    logout(request)
+    return redirect("/api/login_page")

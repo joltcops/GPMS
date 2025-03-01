@@ -19,7 +19,7 @@ urlpatterns = [
     path('mytax/<str:citizen_id>/', views.mytax, name='my_tax'),
     path('applycertificate/<str:citizen_id>/', views.applycertificate, name='apply_certificate'),
     path('applybenefits/<str:citizen_id>/', views.applybenefits, name='apply_benefits'),
-    path('logout/', views.logout, name='logout'),
+    # path('logout/', views.logout, name='logout'),
     path('emphome/<str:emp_id>/', views.emphome, name='emp_home'),
     path('empdetails/<str:emp_id>/', views.empdetail, name='emp_detail'),
     path('citizen/edit/<str:pk>/', CitizenUpdateView.as_view(), name='citizen_edit'),
@@ -101,4 +101,5 @@ urlpatterns = [
     path('env_data_monitor/', views.env_data_monitor, name = 'env_data_monitor'),
     path('members/<str:household_id>', views.members, name = 'members'),
     path('infra_gen/', views.infra_gen, name = 'infra_gen'),
+    path('logout/', views.logout_view, name = 'logout'),
 ]

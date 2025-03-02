@@ -10,6 +10,7 @@
 <body>
 
     <h2>Welfare Scheme Data</h2>
+    
     <div class="certificate-form-container">
         <form method="post" class="certificate-fields">
             {% csrf_token %}
@@ -18,22 +19,26 @@
         </form>
     </div>
 
-    {% if records %}
-        <h3>Results:</h3>
+    {% if records and records.0 %}
+        <h3>Scheme Statistics:</h3>
         <div class="certificate-container">
             <table class="certificate-table">
-                <tr>
-                    <th>Category</th>
-                    <th>Count</th>
-                </tr>
-                <tr>
-                    <td>Number of Enrollments</td>
-                    <td>{{ records.0|default:"N/A" }}</td>
-                </tr>
-                <tr>
-                    <td>Average Income</td>
-                    <td>{{ records.1|floatformat:2|default:"N/A" }}</td>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Number of Enrollments</td>
+                        <td>{{ records.0.0|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Average Income</td>
+                        <td>{{ records.0.1|floatformat:2|default:"N/A" }}</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     {% else %}
@@ -44,16 +49,22 @@
         <h3>Education-wise Enrollment</h3>
         <div class="certificate-container">
             <table class="certificate-table">
-                <tr>
-                    <th>Category</th>
-                    <th>Count</th>
-                </tr>
-                {% for row in edu %}
-                <tr>
-                    <td>Scheme: {{ row.0 }}</td>
-                    <td>{{ row.1 }} - {{ row.2 }}</td>
-                </tr>
-                {% endfor %}
+                <thead>
+                    <tr>
+                        <th>Scheme Name</th>
+                        <th>Education Level</th>
+                        <th>Number of Enrollments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in edu %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     {% endif %}

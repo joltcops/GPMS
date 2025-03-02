@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, CertificateApprovalForm, BenefitApprovalForm, EmployeeForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CensusDateForm, CensusYearForm, CensusPopForm, SchemeDateForm, SchemeNameForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, EmployeeForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CensusDateForm, CensusYearForm, CensusPopForm, SchemeDateForm, SchemeNameForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST

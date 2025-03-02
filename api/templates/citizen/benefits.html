@@ -41,10 +41,49 @@
         </table>
     </div>
 
-    <!-- Apply for New Benefit button -->
-    <form action="{% url 'apply_benefits' citizen.citizen_id %}" method="GET" class="certificate-form">
-        <button type="submit" class="apply-button">Apply for New Benefit</button>
-    </form>
+  <!-- Dropdown form for selecting a benefit scheme -->
+<form id="benefitForm" class="certificate-form">
+    <label for="scheme_id" class="certificate-label">Select Benefit Scheme:</label>
+    <select name="scheme_id" id="scheme_id" class="certificate-dropdown">
+        <option value="select">Select</option>
+        {% for scheme in all %}
+        <option value="{{ scheme.scheme_id }}">{{ scheme.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="button" id="applyBenefitButton" class="apply-button">Apply</button>
+</form>
 
 </body>
 </html>
+
+<script>
+    document.getElementById("applyBenefitButton").addEventListener("click", function() {
+        var selectedScheme = document.getElementById("scheme_id").value;
+        if (selectedScheme === "select") {
+            alert("Please select a valid benefit scheme.");
+            return;
+        }
+
+        var applyUrl = "{% url 'apply_benefits' citizen.citizen_id 'dummy' %}".replace('dummy', selectedScheme);
+
+        fetch(applyUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert(data.message);
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            alert("An unexpected error occurred. Please try again.");
+        });
+    });
+</script>

@@ -28,6 +28,7 @@
                     <th>Certificate Type</th>
                     <th>Issued Date</th>
                     <th>Issued By</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +38,7 @@
                     <td>{{ certificate.1 }}</td>
                     <td>{{ certificate.3 }}</td>
                     <td>{{ certificate.4 }}</td>
+                    <td>{{ certificate.5 }}</td> <!-- Show status -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -44,18 +46,65 @@
     </div>
 
     <!-- Dropdown form for selecting certificate type -->
-    <form action="{% url 'apply_certificate' citizen.citizen_id %}" method="POST" class="certificate-form">
-        {% csrf_token %}
+    <div class="certificate-form">
         <label for="certificate_type" class="certificate-label">To Apply for Certificates select type here:</label>
-        <select name="certificate_type" id="certificate_type" class="certificate-dropdown">
+        <select id="certificate_type" class="certificate-dropdown">
             <option value="select">Select</option>
             <option value="INCOME CERTIFICATE">Income Certificate</option>
             <option value="CASTE CERTIFICATE">Caste Certificate</option>
             <option value="LAND OWNERSHIP CERTIFICATE">Land Ownership Certificate</option>
             <option value="BIRTH CERTIFICATE">Birth Certificate</option>
+            {% for cert_type in certificate_types %}
+                <option value="{{ cert_type }}" 
+                    {% if cert_type in approved_certificates or cert_type in pending_certificates %}
+                        disabled
+                    {% endif %}
+                >
+                    {{ cert_type }}
+                    {% if cert_type in approved_certificates %} (Already Issued) {% endif %}
+                    {% if cert_type in pending_certificates %} (Pending) {% endif %}
+                </option>
+            {% endfor %}
         </select>
-        <button type="submit" class="apply-button">Apply</button>
-    </form>
+        <button id="applyButton" class="apply-button">Apply</button>
+    </div>
+
+    <div id="messageContainer"></div> <!-- Message display -->
+
+    <script>
+        document.getElementById("applyButton").addEventListener("click", function() {
+            var selectedType = document.getElementById("certificate_type").value;
+            if (selectedType === "select") {
+                showMessage("Please select a valid certificate type.", "error");
+                return;
+            }
+
+            fetch("{% url 'apply_certificate' citizen.citizen_id 'CERTIFICATE_TYPE_PLACEHOLDER' %}".replace('CERTIFICATE_TYPE_PLACEHOLDER', selectedType), {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    showMessage(data.message, "success");
+                    setTimeout(() => window.location.reload(), 1000); // Refresh page
+                } else {
+                    showMessage(data.message, "error");
+                }
+            })
+            .catch(error => {
+                showMessage("An unexpected error occurred. Please try again.", "error");
+            });
+        });
+
+        function showMessage(message, type) {
+            var container = document.getElementById("messageContainer");
+            container.innerHTML = `<p class="${type}-message">${message}</p>`;
+        }
+    </script>
 
 </body>
 </html>

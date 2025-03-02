@@ -64,13 +64,13 @@ class TaxForm(forms.Form):
     due_date = forms.DateField()
     paid_status = forms.CharField(max_length=511)
 
-class BenefitForm(forms.Form):
-    # application_id = forms.CharField(max_length=511)
-    scheme_id = forms.CharField(max_length=511)
+# class BenefitForm(forms.Form):
+#     # application_id = forms.CharField(max_length=511)
+#     scheme_id = forms.CharField(max_length=511)
 
-class CertificateForm(forms.Form):
-    # application_id = forms.CharField(max_length=511)
-    certificate_type = forms.CharField(max_length=511)
+# class CertificateForm(forms.Form):
+#     # application_id = forms.CharField(max_length=511)
+#     certificate_type = forms.CharField(max_length=511)
 
 class CertificateApprovalForm(forms.Form):
     # certificate_id = forms.CharField(max_length=511)

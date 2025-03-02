@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import User as auth_user
 from django.http import JsonResponse
 from django.db import connection
-from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, BenefitForm, CertificateForm,CertificateApprovalForm, BenefitApprovalForm, EmployeeForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CensusDateForm, CensusYearForm, CensusPopForm, SchemeDateForm, SchemeNameForm
+from .forms import CitizenForm, LandForm, VaccineForm, AssetsForm, CensusForm, WelfareForm, EnvForm, HouseForm, TaxForm, CertificateApprovalForm, BenefitApprovalForm, EmployeeForm, EnvDateForm, EnvValueForm, InfraDateForm, InfraLocForm, AgriIncome, AgriArea, CensusDateForm, CensusYearForm, CensusPopForm, SchemeDateForm, SchemeNameForm
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -19,6 +19,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User as auth_user
 from django.contrib.auth.models import User
 from django.contrib.auth import  authenticate, login, logout
+from django.utils.timezone import now
 
 def generate_new_citizen_id():
     last_applications = citizen.objects.values_list('citizen_id', flat=True)
@@ -349,7 +350,15 @@ def citizen_detail(request, citizen_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
-    return render(request, 'citizen/citizen_detail.html', {'citizen': citi})
+    members = citizen.objects.raw('SELECT * FROM citizen WHERE household_id = (SELECT household_id from citizen where citizen_id = %s)', [citizen_id])
+    return render(request, 'citizen/citizen_detail.html', {'citizen': citi, 'members': members})
+
+def household_citdetails(request, citizen_id, parent_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
+    citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
+    par = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [parent_id])[0]
+    return render(request, 'citizen/household_citizen.html', {'citizen': citi, 'parent': par})
 
 def cithome(request, citizen_id):
     if(request.user.is_anonymous):
@@ -371,7 +380,8 @@ def mybenefits(request, citizen_id):
         return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     schemes = scheme_enrollments.objects.raw('SELECT * FROM scheme_enrollments WHERE citizen_id = %s', [citizen_id])
-    return render(request, 'citizen/benefits.html', {'citizen': citi, 'schemes': schemes})
+    all_schemes = welfare_schemes.objects.raw('SELECT * FROM welfare_schemes')
+    return render(request, 'citizen/benefits.html', {'citizen': citi, 'schemes': schemes, 'all': all_schemes})
 
 def mytax(request, citizen_id):
     if(request.user.is_anonymous):
@@ -388,77 +398,91 @@ def mytax(request, citizen_id):
     return render(request, 'citizen/tax.html', {'citizen': citi, 'tax_due': tax_due, 'tax_paid': tax_paid})
 
 
-def applycertificate(request, citizen_id):
-    if(request.user.is_anonymous):
+@require_POST
+def applycertificate(request, citizen_id, certificate_type):
+    if request.user.is_anonymous:
         return redirect("/api/login_page")
-    if request.method == 'POST':
-        form = CertificateForm(request.POST)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    application_id = generate_new_certificate_application_id()
-                    certificate_type = form.cleaned_data['certificate_type']
-                    
-                    with connection.cursor() as cursor:
-                        cursor.execute(
-                            "INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)",
-                            [application_id, certificate_type, citizen_id, 'PENDING']
-                        )
-                storage = messages.get_messages(request)
-                for message in storage:
-                    # This iteration clears the messages
-                    pass
-                storage.used = True
-                messages.success(request, 'Certificate application submitted successfully.')
-                return redirect('my_certificates', citizen_id=citizen_id)
-            except IntegrityError as e:
-                if 'unique constraint' in str(e).lower():
-                    form.add_error('application_id', 'An application with this ID already exists.')
-                else:
-                    form.add_error(None, 'An error occurred while submitting the application. Please check all fields and try again.')
-            except Exception as e:
-                form.add_error(None, f'An unexpected error occurred: {str(e)}')
-    else:
-        form = CertificateForm()
     
-    return render(request, 'citizen/applycertificate.html', {'form': form})
+    try:
+        with connection.cursor() as cursor:
+            # Check if the citizen already has an approved certificate of this type
+            cursor.execute(
+                "SELECT COUNT(*) FROM certificate_application WHERE citizen_id = %s AND certificate_type = %s AND status = 'APPROVED'",
+                [citizen_id, certificate_type]
+            )
+            approved_count = cursor.fetchone()[0]
+
+            # Check if the citizen already has a pending application for this certificate type
+            cursor.execute(
+                "SELECT COUNT(*) FROM certificate_application WHERE citizen_id = %s AND certificate_type = %s AND status = 'PENDING'",
+                [citizen_id, certificate_type]
+            )
+            pending_count = cursor.fetchone()[0]
+
+        if approved_count > 0:
+            return JsonResponse({'status': 'error', 'message': 'You already have this certificate.'}, status=400)
+
+        if pending_count > 0:
+            return JsonResponse({'status': 'error', 'message': 'You already have a pending application for this certificate.'}, status=400)
+
+        # If no conflicts, proceed with application
+        with transaction.atomic():
+            application_id = generate_new_certificate_application_id()
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO certificate_application (application_id, certificate_type, citizen_id, status) VALUES (%s, %s, %s, %s)",
+                    [application_id, certificate_type, citizen_id, 'PENDING']
+                )
+
+        messages.success(request, 'Certificate application submitted successfully.')
+        return JsonResponse({'status': 'success', 'message': 'Certificate application submitted successfully.'})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
 
 
-def applybenefits(request, citizen_id):
-    if(request.user.is_anonymous):
+@require_POST
+def applybenefits(request, citizen_id, scheme_id):
+    if request.user.is_anonymous:
         return redirect("/api/login_page")
-    if request.method == 'POST':
-        form = BenefitForm(request.POST)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    application_id = generate_new_benefit_application_id()
-                    scheme_id = form.cleaned_data['scheme_id']
-                    
-                    with connection.cursor() as cursor:
-                        cursor.execute(
-                            "INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)",
-                            [application_id, citizen_id, scheme_id, 'PENDING']
-                        )
-                storage = messages.get_messages(request)
-                for message in storage:
-                    # This iteration clears the messages
-                    pass
-                storage.used = True
-
-                messages.success(request, 'Benefit application submitted successfully.')
-                return redirect('my_benefits', citizen_id=citizen_id)
-            except IntegrityError as e:
-                if 'unique constraint' in str(e).lower():
-                    form.add_error('application_id', 'An application with this ID already exists.')
-                else:
-                    form.add_error(None, 'An error occurred while submitting the application. Please check all fields and try again.')
-            except Exception as e:
-                form.add_error(None, f'An unexpected error occurred: {str(e)}')
-    else:
-        form = BenefitForm()
     
-    return render(request, 'citizen/apply_benefit.html', {'form': form})
+    try:
+        with connection.cursor() as cursor:
+            # Check if the citizen is already enrolled in this scheme
+            cursor.execute(
+                "SELECT COUNT(*) FROM benefit_application WHERE citizen_id = %s AND scheme_id = %s AND status = 'APPROVED'",
+                [citizen_id, scheme_id]
+            )
+            approved_count = cursor.fetchone()[0]
+
+            # Check if there is a pending application
+            cursor.execute(
+                "SELECT COUNT(*) FROM benefit_application WHERE citizen_id = %s AND scheme_id = %s AND status = 'PENDING'",
+                [citizen_id, scheme_id]
+            )
+            pending_count = cursor.fetchone()[0]
+
+        if approved_count > 0:
+            return JsonResponse({'status': 'error', 'message': 'You are already enrolled in this benefit scheme.'}, status=400)
+
+        if pending_count > 0:
+            return JsonResponse({'status': 'error', 'message': 'You already have a pending application for this benefit scheme.'}, status=400)
+
+        # Proceed with application if no conflicts
+        with transaction.atomic():
+            application_id = generate_new_benefit_application_id()
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO benefit_application (application_id, citizen_id, scheme_id, status) VALUES (%s, %s, %s, %s)",
+                    [application_id, citizen_id, scheme_id, 'PENDING']
+                )
+
+        messages.success(request, 'Benefit application submitted successfully.')
+        return JsonResponse({'status': 'success', 'message': 'Benefit application submitted successfully.'})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
+
 
 def view_cert_list(request, employee_id):
     if(request.user.is_anonymous):
@@ -467,90 +491,74 @@ def view_cert_list(request, employee_id):
     employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
     return render(request, 'employee/certificate_list.html', {'certificates': certs, 'emp': employee})
 
-
 def certificate_approve(request, application_id, employee_id):
-    if(request.user.is_anonymous):
+    if request.user.is_anonymous:
         return redirect("/api/login_page")
-    if request.method == 'POST':
-        form = CertificateApprovalForm(request.POST)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    certificate_id = generate_new_certificate_id()
-                    issue_date = form.cleaned_data['issue_date']
-                    issuing_official = form.cleaned_data['issuing_official']
-                    
-                    with connection.cursor() as cursor:
-                        cursor.execute(
-                            """
-                            INSERT INTO certificate 
-                            (certificate_id, certificate_type, applicant_id, issue_date, issuing_official) 
-                            VALUES (%s, 
-                                    (SELECT certificate_type FROM certificate_application WHERE application_id = %s), 
-                                    (SELECT citizen_id FROM certificate_application WHERE application_id = %s), 
-                                    %s, %s)
-                            """,
-                            [certificate_id, application_id, application_id, issue_date, issuing_official]
-                        )
-                        cursor.execute(
-                            "UPDATE certificate_application SET status = %s WHERE application_id = %s",
-                            ['APPROVED', application_id]
-                        )
 
-                messages.success(request, 'Certificate approved successfully.')
-                return redirect('certificate_list')  # Redirect to a list of certificates or appropriate page
-            except IntegrityError as e:
-                if 'unique constraint' in str(e).lower():
-                    form.add_error('certificate_id', 'A certificate with this ID already exists.')
-                else:
-                    form.add_error(None, 'An error occurred while approving the certificate. Please check all fields and try again.')
-            except Exception as e:
-                form.add_error(None, f'An unexpected error occurred: {str(e)}')
-    else:
-        form = CertificateApprovalForm()
-    
-    return render(request, 'employee/certificate_approve.html', {'form': form, 'application_id': application_id, 'employee_id': employee_id})
+    try:
+        with transaction.atomic():
+            certificate_id = generate_new_certificate_id()
+            issue_date = now().date()  # Get current date
+            
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO certificate 
+                    (certificate_id, certificate_type, applicant_id, issue_date, issuing_official) 
+                    VALUES (
+                        %s, 
+                        (SELECT certificate_type FROM certificate_application WHERE application_id = %s), 
+                        (SELECT citizen_id FROM certificate_application WHERE application_id = %s), 
+                        %s, %s
+                    )
+                    """,
+                    [certificate_id, application_id, application_id, issue_date, employee_id]
+                )
+                cursor.execute(
+                    "UPDATE certificate_application SET status = %s WHERE application_id = %s",
+                    ['APPROVED', application_id]
+                )
+
+        messages.success(request, 'Certificate approved successfully.')
+    except Exception as e:
+        messages.error(request, f'An unexpected error occurred: {str(e)}')
+
+    return redirect('certificate_list', employee_id=employee_id)
 
 def benefit_approve(request, application_id, employee_id):
-    if(request.user.is_anonymous):
+    if request.user.is_anonymous:
         return redirect("/api/login_page")
-    if request.method == 'POST':
-        form = BenefitApprovalForm(request.POST)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    enrollment_id = generate_new_scheme_enrollments_id()
-                    enrollment_date = form.cleaned_data['enrollment_date']
-                    
-                    with connection.cursor() as cursor:
-                        cursor.execute(
-                            """
-                            INSERT INTO scheme_enrollments 
-                            (enrollment_id, citizen_id, scheme_id, enrollment_date) 
-                            VALUES (%s, 
-                                    (SELECT citizen_id FROM benefit_application WHERE application_id = %s), 
-                                    (SELECT scheme_id FROM benefit_application WHERE application_id = %s), 
-                                    %s)
-                            """,
-                            [enrollment_id, application_id, application_id, enrollment_date]
-                        )
-                        cursor.execute(
-                            "UPDATE benefit_application SET status = %s WHERE application_id = %s",
-                            ['APPROVED', application_id]
-                        )
 
-                messages.success(request, 'Benefit application approved successfully.')
-            except IntegrityError as e:
-                if 'unique constraint' in str(e).lower():
-                    form.add_error('enrollment_id', 'An enrollment with this ID already exists.')
-                else:
-                    form.add_error(None, 'An error occurred while approving the benefit. Please check all fields and try again.')
-            except Exception as e:
-                form.add_error(None, f'An unexpected error occurred: {str(e)}')
-    else:
-        form = BenefitApprovalForm()
-    
-    return render(request, 'employee/benefit_approve.html', {'form': form, 'application_id': application_id, 'employee_id' : employee_id})
+    try:
+        with transaction.atomic():
+            enrollment_id = generate_new_scheme_enrollments_id()
+            enrollment_date = now().date()  # Use current date
+            
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO scheme_enrollments 
+                    (enrollment_id, citizen_id, scheme_id, enrollment_date) 
+                    VALUES (
+                        %s, 
+                        (SELECT citizen_id FROM benefit_application WHERE application_id = %s), 
+                        (SELECT scheme_id FROM benefit_application WHERE application_id = %s), 
+                        %s
+                    )
+                    """,
+                    [enrollment_id, application_id, application_id, enrollment_date]
+                )
+                cursor.execute(
+                    "UPDATE benefit_application SET status = %s WHERE application_id = %s",
+                    ['APPROVED', application_id]
+                )
+
+        messages.success(request, 'Benefit application approved successfully.')
+    except Exception as e:
+        messages.error(request, f'An unexpected error occurred: {str(e)}')
+
+    return redirect('benefits_list', employee_id=employee_id)
+
     
 def view_bene_list(request, employee_id):
     if(request.user.is_anonymous):
@@ -795,6 +803,28 @@ def delete_land(request, land_id):
     try:
         cursor = connection.cursor()
         cursor.execute("DELETE FROM land_records WHERE land_id = %s", [land_id])
+        return JsonResponse({'status': 'success'})
+    except land_records.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Land record not found'}, status=404)
+    
+@require_POST
+def delete_tax(request, tax_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM tax WHERE tax_id = %s", [tax_id])
+        return JsonResponse({'status': 'success'})
+    except land_records.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Land record not found'}, status=404)
+    
+@require_POST
+def delete_scheme_enrollment(request, enrollment_id):
+    if(request.user.is_anonymous):
+        return redirect("/api/login_page")
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM scheme_enrollments WHERE enrollment_id = %s", [enrollment_id])
         return JsonResponse({'status': 'success'})
     except land_records.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Land record not found'}, status=404)

@@ -10,8 +10,8 @@
     <div class="topbar">
         <div class="topbar-left">GPMS</div>
         <div class="topbar-right">
-            <a href="{% url 'citizen_home' citizen.citizen_id %}">Home</a>
-            <a href="{% url 'citizen_detail' citizen.citizen_id %}">Profile</a>
+            <a href="{% url 'citizen_home' parent.citizen_id %}">Home</a>
+            <a href="{% url 'citizen_detail' parent.citizen_id %}">Profile</a>
             <a href="{% url 'logout' %}">Logout</a>
         </div>
     </div>
@@ -23,12 +23,6 @@
     <p><strong>Date of Birth:</strong> {{ citizen.dob }}</p>
     <p><strong>Educational Qualification:</strong> {{ citizen.educational_qualification }}</p>
     <p><strong>Household:</strong> {{ citizen.household_id }}</p>
-    <p><strong>Household members:</strong></p>
-    <ol>
-        {% for member in members %}
-            <a href="{% url 'house_citizen_detail' member.citizen_id citizen.citizen_id  %}"><li>{{ member.citizen_id }} ({{ member.name }})</li></a>
-        {% endfor %}
-    </ol>
     <p><strong>Parent:</strong> {{ citizen.parent_id }}</p>
     <p><strong>Income:</strong> {{ citizen.income }}</p>
     </div>

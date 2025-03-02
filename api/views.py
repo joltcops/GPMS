@@ -1730,7 +1730,12 @@ def show_area_agri(request):
 
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT name, area_acres FROM citizen JOIN land_records ON citizen.citizen_id = land_records.citizen_id WHERE area_acres>%s;
+                    SELECT name, SUM(area_acres) AS s 
+                    FROM citizen 
+                    JOIN land_records ON citizen.citizen_id = land_records.citizen_id 
+                    GROUP BY name
+                    HAVING SUM(area_acres) > %s;
+
                 """, [area])
                
                 records = cursor.fetchall()

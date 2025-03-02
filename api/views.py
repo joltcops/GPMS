@@ -1318,13 +1318,9 @@ class EmpCitUpdateView(UpdateView):
     
 
 def about(request):
-    if(request.user.is_anonymous):
-        return redirect("/api/login_page")
     return render(request, 'about.html')
 
 def contact(request):
-    if(request.user.is_anonymous):
-        return redirect("/api/login_page")
     return render(request, 'contact.html')
 
 def getschemes(request):

@@ -1,14 +1,26 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Benefit Approve</title>
+    <link rel="stylesheet" href="{% static 'styles/citizen.css' %}">
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
     <h1>Benefit Approve</h1>
-    <form method="POST">
+    <div class="certificate-form-container">
+    <form method="POST" class="certificate-fields">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Submit</button>
+        <button type="submit" class="certificate-button">Submit</button>
     </form>
+</div>
 </body>
 </html>

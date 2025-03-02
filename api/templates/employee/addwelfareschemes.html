@@ -6,7 +6,14 @@
     <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
-
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
     <div class="certificate-form-container">
         <h1>Add Welfare Schemes</h1>
         <form method="POST" class="certificate-fields">

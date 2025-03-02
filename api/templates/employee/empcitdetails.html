@@ -5,6 +5,14 @@
     <link rel="stylesheet" href="{% static 'styles/employee.css' %}">
 </head>
 <body>
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
     <h1>Citizen Details</h1>
 
     <div class="container">
@@ -13,7 +21,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2>Personal Information</h2>
-                <a href="{% url 'citizen_edit' citizen.citizen_id %}">Edit</a>
+                <a href="{% url 'citizen_edit' citizen.citizen_id emp.employee_id %}">Edit</a>
             </div>
             <div class="card-body">
                 <p><strong>ID:</strong> {{ citizen.citizen_id }}</p>
@@ -30,7 +38,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2>User Information</h2>
-                <a href="{% url 'user_edit' user.user_id %}">Edit</a>
+                <a href="{% url 'user_edit' user.user_id emp.employee_id %}">Edit</a>
             </div>
             <div class="card-body">
                 <p><strong>User ID:</strong> {{ user.user_id }}</p>
@@ -42,7 +50,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2>Household Details</h2>
-                <a href="{% url 'household_edit' household.household_id %}">Edit</a>
+                <a href="{% url 'household_edit' household.household_id emp.employee_id %}">Edit</a>
             </div>
             <div class="card-body">
                 <p><strong>Address:</strong> {{ household.address }}</p>
@@ -61,7 +69,7 @@
         <div class="card mb-4">
           <div class="card-header d-flex justify-content-between align-items-center">
               <h2>Land Holdings</h2>
-              <a href="{% url 'add_land' citizen.citizen_id %}" class="btn btn-success">Add Land</a>
+              <a href="{% url 'add_land' citizen.citizen_id emp.employee_id%}" class="btn btn-success">Add Land</a>
           </div>
           <div class="card-body">
               <table class="citizen-table">
@@ -79,7 +87,7 @@
                               <td>{{ plot.crop_type }}</td>
                               <td>{{ plot.area_acres }}</td>
                               <td>
-                                <button class = "delete-button"><a href="{% url 'land_edit' plot.land_id %}" class="edit-button">Edit</a></button>
+                                <button class = "delete-button"><a href="{% url 'land_edit' plot.land_id emp.employee_id %}" class="edit-button">Edit</a></button>
                               </td>
                               <td>
                                   <button onclick="confirmDelete('land', '{{ plot.land_id }}')" class="delete-button">Delete</button>
@@ -127,7 +135,7 @@
         <div class="card mb-4">
           <div class="card-header d-flex justify-content-between align-items-center">
               <h2>Vaccinations</h2>
-              <a href="{% url 'add_vaccine' citizen.citizen_id %}" class="btn btn-success">Add Vaccine</a>
+              <a href="{% url 'add_vaccine' citizen.citizen_id emp.employee_id%}" class="btn btn-success">Add Vaccine</a>
           </div>
           <div class="card-body">
               <table class="citizen-table">
@@ -159,7 +167,7 @@
         <div class="card mb-4">
           <div class="card-header d-flex justify-content-between align-items-center">
               <h2>Tax Details</h2>
-              <a href="{% url 'add_tax' citizen.citizen_id %}" class="btn btn-success">Add Tax Record</a>
+              <a href="{% url 'add_tax' citizen.citizen_id emp.employee_id%}" class="btn btn-success">Add Tax Record</a>
           </div>
           <div class="card-body">
               <table class="citizen-table">

@@ -7,9 +7,18 @@
 </head>
 <body>
 
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
     <div class="citizen-list-container">
         <h1>Environment Records</h1>
-        <a href="{% url 'add_env' %}" class="certificate-button">Add Environment Record</a>
+        <a href="{% url 'add_env' emp.employee_id%}" class="certificate-button">Add Environment Record</a>
         <br><br>
 
         <table class="citizen-table">
@@ -23,7 +32,6 @@
                     <th>Wind Speed</th>
                     <th>Temperature</th>
                     <th>Humidity</th>
-                    <th>Actions</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -40,13 +48,10 @@
                         <td>{{ rec.humidity }}</td>
                         <td> 
                             <button class="delete-button">
-                                <a href="{% url 'env_edit' rec.record_id %}" class="edit-button">Edit</a>
+                                <a href="{% url 'env_edit' rec.record_id emp.employee_id%}" class="edit-button">Edit</a>
                             </button>
                         </td>
-                        <td>
-                            
-                            <button class="delete-button" onclick="confirmDelete('{{ rec.record_id }}')">Delete</button>
-                        </td>
+
                     </tr>
                 {% endfor %}
             </tbody>

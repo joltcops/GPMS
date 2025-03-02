@@ -7,6 +7,15 @@
 </head>
 <body>
 
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
     <div class="citizen-list-container">
         <h1>Benefits List</h1>
 
@@ -26,7 +35,7 @@
                         <td>{{ benefit.scheme_id }}</td>
                         <td>{{ benefit.citizen_id }}</td>
                         <td>
-                            <a href="{% url 'benefit_approve' benefit.application_id %}" class="edit-button">Approve</a>
+                            <a href="{% url 'benefit_approve' benefit.application_id emp.employee_id %}" class="edit-button">Approve</a>
                         </td>
                     </tr>
                 {% endfor %}

@@ -32,7 +32,32 @@
                 </tr>
             </thead>
             <tbody>
-                {% for tax in taxes %}
+                {% for tax in tax_due %}
+                <tr>
+                    <td>{{ tax.0 }}</td>
+                    <td>{{ tax.2 }}</td>
+                    <td>{{ tax.3 }}</td>
+                    <td>{{ tax.4 }}</td>
+                    <td>{{ tax.5 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="certificate-container">
+        <table class="certificate-table">
+            <thead>
+                <tr>
+                    <th>Tax ID</th>
+                    <th>Tax Type</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tax in tax_paid %}
                 <tr>
                     <td>{{ tax.0 }}</td>
                     <td>{{ tax.2 }}</td>

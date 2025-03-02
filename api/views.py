@@ -238,9 +238,13 @@ def create_user(username, password, role):
     try:
         user = User.objects.create_user(username=username, password=password)
         user.is_active = True  # Activate the user
+        if role == 'ADMIN':
+            user.is_staff = True
+            user.is_superuser = True
         user.save()
         return user
     except IntegrityError:
+        print("User with this ID already exists.")
         return None  # Handle duplicate username case
 
 def add_citizen(request, employee_id):
@@ -261,6 +265,8 @@ def add_citizen(request, employee_id):
                     educational_qualification = form.cleaned_data['educational_qualification']
                     income = form.cleaned_data['income']
 
+                    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+
                     user_id = citizen_id
                     role = "CITIZEN"
                     password_user = '123456$@'  # Default password (should be changed by user)
@@ -269,7 +275,7 @@ def add_citizen(request, employee_id):
                     user = create_user(user_id, password_user, role)
                     if user is None:
                         form.add_error(None, "User with this ID already exists in the system.")
-                        return render(request, 'employee/addcitizen.html', {'form': form})
+                        return render(request, 'employee/addcitizen.html', {'form': form, 'emp': employee})
 
                     # **Step 2: Insert into the custom users & citizen table**
                     with connection.cursor() as cursor:
@@ -279,7 +285,7 @@ def add_citizen(request, employee_id):
                                        [citizen_id, name, gender, dob, educational_qualification, household_id, parent_id, income])
                 
                 messages.success(request, 'Citizen added successfully.')
-                return redirect('emp_home', emp_id=employee_id)
+                form = CitizenForm()
 
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
@@ -290,10 +296,11 @@ def add_citizen(request, employee_id):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = CitizenForm()
-    
-    return render(request, 'employee/addcitizen.html', {'form': form})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
 
-def add_census_data(request):
+    return render(request, 'employee/addcitizen.html', {'form': form, 'emp': employee})
+
+def add_census_data(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -312,8 +319,8 @@ def add_census_data(request):
                             "INSERT INTO census_data(census_id, household_id, citizen_id, event_type, event_date) VALUES (%s, %s, %s, %s, %s)",
                             [census_id, household_id, citizen_id, event_type, event_date]
                         )
-
-                messages.success(request, 'Census data added successfully.')
+                form = CensusForm()
+                # messages.success(request, 'Census data added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('census_id', 'A census record with this ID already exists.')
@@ -323,19 +330,20 @@ def add_census_data(request):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = CensusForm()
-    
-    return render(request, 'employee/addcensusdata.html', {'form': form})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addcensusdata.html', {'form': form, 'emp': employee})
 
 def home_page(request):
     # if(request.user.is_anonymous):
     #     return redirect("/api/login_page")
     return render(request, 'index.html')
 
-def citizen_list(request):
+def citizen_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
-    citizens = citizen.objects.raw('SELECT * FROM citizen')
-    return render(request, 'employee/citizen_list.html', {'citizens': citizens})
+    citizens = citizen.objects.raw('SELECT * FROM citizen order by citizen_id')
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/citizen_list.html', {'citizens': citizens, 'emp': employee})
 
 def citizen_detail(request, citizen_id):
     if(request.user.is_anonymous):
@@ -370,9 +378,14 @@ def mytax(request, citizen_id):
         return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM tax WHERE payer_id = %s', [citizen_id])
-        taxes = cursor.fetchall()
-    return render(request, 'citizen/tax.html', {'citizen': citi, 'taxes': taxes})
+        cursor.execute("SELECT * FROM tax WHERE payer_id = %s and paid_status='DUE' order by due_date desc", [citizen_id])
+        tax_due = cursor.fetchall()
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM tax WHERE payer_id = %s and paid_status='PAID' order by due_date desc", [citizen_id])
+        tax_paid = cursor.fetchall()
+
+    return render(request, 'citizen/tax.html', {'citizen': citi, 'tax_due': tax_due, 'tax_paid': tax_paid})
 
 
 def applycertificate(request, citizen_id):
@@ -447,14 +460,15 @@ def applybenefits(request, citizen_id):
     
     return render(request, 'citizen/apply_benefit.html', {'form': form})
 
-def view_cert_list(request):
+def view_cert_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     certs = certificate_application.objects.raw('SELECT * FROM certificate_application WHERE status = %s', ['PENDING'])
-    return render(request, 'employee/certificate_list.html', {'certificates': certs})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/certificate_list.html', {'certificates': certs, 'emp': employee})
 
 
-def certificate_approve(request, application_id):
+def certificate_approve(request, application_id, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -495,9 +509,9 @@ def certificate_approve(request, application_id):
     else:
         form = CertificateApprovalForm()
     
-    return render(request, 'employee/certificate_approve.html', {'form': form, 'application_id': application_id})
+    return render(request, 'employee/certificate_approve.html', {'form': form, 'application_id': application_id, 'employee_id': employee_id})
 
-def benefit_approve(request, application_id):
+def benefit_approve(request, application_id, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -536,13 +550,14 @@ def benefit_approve(request, application_id):
     else:
         form = BenefitApprovalForm()
     
-    return render(request, 'employee/benefit_approve.html', {'form': form, 'application_id': application_id})
+    return render(request, 'employee/benefit_approve.html', {'form': form, 'application_id': application_id, 'employee_id' : employee_id})
     
-def view_bene_list(request):
+def view_bene_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
     bene = benefit_application.objects.raw('SELECT * FROM benefit_application WHERE status = %s', ['PENDING'])
-    return render(request, 'employee/benefit_list.html', {'benefits': bene})
+    return render(request, 'employee/benefit_list.html', {'benefits': bene, 'emp':employee})
 
 def logout(request):
     if(request.user.is_anonymous):
@@ -563,7 +578,7 @@ def empdetail(request, emp_id):
     print(emp.employee_id)
     return render(request, 'employee/empdetail.html', {'emp': emp, 'cit': cit})
 
-def empcitdetails(request, citizen_id):
+def empcitdetails(request, citizen_id, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     citi = citizen.objects.raw('SELECT * FROM citizen WHERE citizen_id = %s', [citizen_id])[0]
@@ -573,10 +588,11 @@ def empcitdetails(request, citizen_id):
     vac = vaccinations.objects.raw('SELECT * FROM vaccinations WHERE citizen_id = %s', [citizen_id])
     user = users.objects.raw('SELECT * FROM users join citizen ON users.user_id = citizen.citizen_id WHERE citizen.citizen_id = %s', [citizen_id])[0]
     members = citizen.objects.raw('SELECT * FROM citizen WHERE household_id = (SELECT household_id from citizen where citizen_id = %s)', [citizen_id])
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM tax WHERE payer_id = %s', [citizen_id])
         taxes = cursor.fetchall()
-    return render(request, 'employee/empcitdetails.html', {'citizen': citi, 'household': house, 'land': land, 'senroll': senroll, 'vaccinations': vac, 'user': user, 'members': members, 'taxes': taxes})
+    return render(request, 'employee/empcitdetails.html', {'citizen': citi, 'household': house, 'land': land, 'senroll': senroll, 'vaccinations': vac, 'user': user, 'members': members, 'taxes': taxes, 'emp': employee})
 
 class CitizenUpdateView(UpdateView):
     
@@ -602,7 +618,7 @@ class CitizenUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('emp_citizen_detail', kwargs={'citizen_id': self.kwargs['pk']})
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
 class HouseholdUpdateView(UpdateView):
     model = household
@@ -622,7 +638,7 @@ class HouseholdUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('emp_citizen_detail', kwargs={'citizen_id': self.object.household_id})
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
 
 class LandUpdateView(UpdateView):
@@ -643,7 +659,7 @@ class LandUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('emp_citizen_detail', kwargs={'citizen_id': self.object.land_id})
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
     
 class UserUpdateView(UpdateView):
@@ -664,7 +680,7 @@ class UserUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('emp_citizen_detail', kwargs={'citizen_id': self.object.user_id})
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
 class SchemeUpdateView(UpdateView):
     model = welfare_schemes
@@ -684,7 +700,7 @@ class SchemeUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('welfare_schemes_list')
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
     
 class CenUpdateView(UpdateView):
     model = census_data
@@ -704,10 +720,10 @@ class CenUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('census_data_list')
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
 
-def add_land(request, citizen_id):
+def add_land(request, citizen_id, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -726,8 +742,8 @@ def add_land(request, citizen_id):
                             "INSERT INTO land_records (land_id, citizen_id, area_acres, crop_type) VALUES (%s, %s, %s, %s)",
                             [land_id, cit.citizen_id, area_acres, crop_type]
                         )
-
-                messages.success(request, 'Land record added successfully.')
+                form = LandForm()
+                # messages.success(request, 'Land record added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('land_id', 'A land record with this ID already exists.')
@@ -737,9 +753,9 @@ def add_land(request, citizen_id):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = LandForm()
-    
-    return render(request, 'employee/addland.html', {'form': form, 'citizen_id': citizen_id})
-def add_vaccine(request, citizen_id):
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addland.html', {'form': form, 'citizen_id': citizen_id, 'emp':employee})
+def add_vaccine(request, citizen_id, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -758,8 +774,8 @@ def add_vaccine(request, citizen_id):
                             "INSERT INTO vaccinations (vaccination_id, citizen_id, vaccine_type, date_administered) VALUES (%s, %s, %s, %s)",
                             [vacc_id, cit.citizen_id, vacc_type, data_ad]
                         )
-
-                messages.success(request, 'Vaccination record added successfully.')
+                form = VaccineForm()
+                # messages.success(request, 'Vaccination record added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('vaccination_id', 'A vaccination record with this ID already exists.')
@@ -769,8 +785,8 @@ def add_vaccine(request, citizen_id):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = VaccineForm()
-    
-    return render(request, 'employee/addvaccine.html', {'form': form, 'citizen_id': citizen_id})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addvaccine.html', {'form': form, 'citizen_id': citizen_id, 'emp':employee})
 
 @require_POST
 def delete_land(request, land_id):
@@ -821,13 +837,14 @@ def delete_citizen(request, citizen_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
     
-def assetslist(request):
+def assetslist(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     asset = assets.objects.raw('SELECT * FROM assets')
-    return render(request, 'employee/assets_list.html', {'assets': asset})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/assets_list.html', {'assets': asset, 'emp':employee})
 
-def add_assets(request):
+def add_assets(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -846,8 +863,8 @@ def add_assets(request):
                             "INSERT INTO assets (asset_id, type, location, installation_date, budget) VALUES (%s, %s, %s, %s, %s)",
                             [asset_id, type, location, installation_date, budget]
                         )
-
-                messages.success(request, 'Asset added successfully.')
+                form = AssetsForm()
+                # messages.success(request, 'Asset added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('asset_id', 'An asset with this ID already exists.')
@@ -857,10 +874,10 @@ def add_assets(request):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = AssetsForm()
-    
-    return render(request, 'employee/addassets.html', {'form': form})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addassets.html', {'form': form, 'emp':employee})
 
-def add_welfare_schemes(request):
+def add_welfare_schemes(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -877,8 +894,8 @@ def add_welfare_schemes(request):
                             "INSERT INTO welfare_schemes (scheme_id, name, description) VALUES (%s, %s, %s)",
                             [scheme_id, name, description]
                         )
-
-                messages.success(request, 'Welfare scheme added successfully.')
+                form = WelfareForm()
+                # messages.success(request, 'Welfare scheme added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('scheme_id', 'A welfare scheme with this ID already exists.')
@@ -888,8 +905,8 @@ def add_welfare_schemes(request):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = WelfareForm()
-    
-    return render(request, 'employee/addwelfareschemes.html', {'form': form})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addwelfareschemes.html', {'form': form, 'emp':employee})
 
 @require_POST
 def delete_asset(request, asset_id):
@@ -943,19 +960,21 @@ class AssetUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
-        return reverse('assetslist')
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
-def census_data_list(request):
+def census_data_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     census = census_data.objects.raw('SELECT * FROM census_data')
-    return render(request, 'employee/census_data_list.html', {'census_data': census})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/census_data_list.html', {'census_data': census, 'emp': employee})
 
-def welfare_schemes_list(request):
+def welfare_schemes_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     schemes = welfare_schemes.objects.raw('SELECT * FROM welfare_schemes')
-    return render(request, 'employee/welfare_schemes_list.html', {'schemes': schemes})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/welfare_schemes_list.html', {'schemes': schemes, 'emp': employee})
 
 class EnvUpdateView(UpdateView):
     model = env_data
@@ -978,7 +997,7 @@ class EnvUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
-        return reverse('env_list')
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
     
 class HouseUpdateView(UpdateView):
     model = household
@@ -998,9 +1017,9 @@ class HouseUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
-        return reverse('house_list')
+        return reverse('emp_home', kwargs={'emp_id': self.kwargs['pkk']})
 
-def add_tax(request, citizen_id):
+def add_tax(request, citizen_id, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -1020,8 +1039,8 @@ def add_tax(request, citizen_id):
                             "INSERT INTO tax (tax_id, payer_id, type, amount, due_date, paid_status) VALUES (%s, %s, %s, %s, %s, %s)",
                             [tax_id, payer_id, type, amount, due_date, paid_status]
                         )
-
-                messages.success(request, 'Tax record added successfully.')
+                form = TaxForm()
+                # messages.success(request, 'Tax record added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('tax_id', 'A tax record with this ID already exists.')
@@ -1031,22 +1050,24 @@ def add_tax(request, citizen_id):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = TaxForm()
-    
-    return render(request, 'employee/addtax.html', {'form': form, 'citizen_id': citizen_id})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addtax.html', {'form': form, 'citizen_id': citizen_id, 'emp':employee})
 
-def env_list(request):
+def env_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     env = env_data.objects.raw('SELECT * FROM env_data')
-    return render(request, 'employee/envlist.html', {'env': env})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/envlist.html', {'env': env, 'emp': employee})
 
-def house_list(request):
+def house_list(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     houses = household.objects.raw('SELECT * FROM household')
-    return render(request, 'employee/houses.html', {'houses': houses})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/houses.html', {'houses': houses, 'emp':employee})
 
-def add_env(request):
+def add_env(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -1068,8 +1089,8 @@ def add_env(request):
                             "INSERT INTO env_data (record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                             [record_id, rainfall, aqi, gwl, date_of_record, temperature, humidity, wind_speed]
                         )
-
-                messages.success(request, 'Environmental data added successfully.')
+                form = EnvForm()
+                # messages.success(request, 'Environmental data added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('record_id', 'A record with this ID already exists.')
@@ -1079,10 +1100,10 @@ def add_env(request):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = EnvForm()
-    
-    return render(request, 'employee/addenv.html', {'form': form})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addenv.html', {'form': form, 'emp':employee})
 
-def add_house(request):
+def add_house(request, employee_id):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")
     if request.method == 'POST':
@@ -1100,8 +1121,8 @@ def add_house(request):
                             "INSERT INTO household (household_id, address, category, income) VALUES (%s, %s, %s, %s)",
                             [household_id, address, category, income]
                         )
-
-                messages.success(request, 'Household added successfully.')
+                form = HouseForm()
+                # messages.success(request, 'Household added successfully.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('household_id', 'A household with this ID already exists.')
@@ -1111,8 +1132,8 @@ def add_house(request):
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
     else:
         form = HouseForm()
-    
-    return render(request, 'employee/addhouse.html', {'form': form})
+    employee = panchayat_employees.objects.raw("SELECT * FROM panchayat_employees where employee_id = %s", [employee_id])[0]
+    return render(request, 'employee/addhouse.html', {'form': form, 'emp':employee})
 
 def add_employee(request):
     if request.user.is_anonymous:
@@ -1124,42 +1145,49 @@ def add_employee(request):
             try:
                 with transaction.atomic():
                     employee_id = generate_new_panchayat_employees_id()
-                    print(employee_id)
+                    print("Generated Employee ID:", employee_id)
                     citizen_id = form.cleaned_data['citizen_id']
                     department = form.cleaned_data['department']
                     role = form.cleaned_data['role']
                     password = '123456$@'  # Default password
 
-                    # Create user in Django's User model
+                    # Create user in Django User model
                     user = create_user(employee_id, password, role)
                     if not user:
                         form.add_error(None, 'A user with this ID already exists.')
                         raise IntegrityError("User creation failed due to duplicate ID.")
-
+                    
                     with connection.cursor() as cursor:
                         cursor.execute(
                             "INSERT INTO users (user_id, role, password_user) VALUES (%s, %s, %s)",
-                            [employee_id, role, password]
+                            [employee_id, 'EMPLOYEE', password]
                         )
-                        cursor.execute(
-                            "INSERT INTO panchayat_employees (employee_id, citizen_id, role, department) VALUES (%s, %s, %s, %s)",
-                            [employee_id, citizen_id, role, department]
-                        )
+
+                    citi = citizen.objects.get(citizen_id=citizen_id)
+                    panchayat_employees.objects.create(
+                        employee_id=employee_id, citizen_id=citi,
+                        role=role, department=department
+                    )
 
                 messages.success(request, 'Employee added successfully.')
-                return redirect('admin_home')  # Redirect after successful addition
+                return redirect('adm_home')
 
+            except citizen.DoesNotExist:
+                form.add_error('citizen_id', 'No citizen found with this ID.')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower():
                     form.add_error('employee_id', 'An employee with this ID already exists.')
                 else:
-                    form.add_error(None, 'An error occurred while adding the employee. Please check all fields and try again.')
+                    form.add_error(None, f'Database integrity error: {str(e)}')
             except Exception as e:
                 form.add_error(None, f'An unexpected error occurred: {str(e)}')
+                print(f"Unexpected error: {str(e)}")  # Log the full error
+
     else:
         form = EmployeeForm()
-        
+
     return render(request, 'admin/addemployee.html', {'form': form})
+
 
 def admhome(request):
     if(request.user.is_anonymous):
@@ -1210,7 +1238,7 @@ class EmployeeUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
-        return reverse('adm_employee_detail', kwargs={'employee_id': self.kwargs['pk']})
+        return reverse('adm_home')
     
 class EmpUserUpdateView(UpdateView):
     model = users
@@ -1230,7 +1258,7 @@ class EmpUserUpdateView(UpdateView):
         return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
-        return reverse('adm_employee_detail', kwargs={'employee_id': self.object.user_id})
+        return reverse('adm_home')
 
 class EmpCitUpdateView(UpdateView):
     model = citizen
@@ -1256,7 +1284,7 @@ class EmpCitUpdateView(UpdateView):
 
     def get_success_url(self):
         emp = panchayat_employees.objects.raw('SELECT * FROM panchayat_employees WHERE citizen_id = %s', [self.object.citizen_id])[0]
-        return reverse('adm_employee_detail', kwargs={'employee_id': emp.employee_id})
+        return reverse('adm_home')
     
 
 def about(request):
@@ -2026,6 +2054,7 @@ def login_view(request):
         password = request.POST.get("password")
         user = authenticate(username = userid, password = password)
     if user is None:
+        print("user not fetched\n")
         return redirect("/api/login_page")
     else:
         login(request, user)
@@ -2120,6 +2149,8 @@ def login_view(request):
                     return HttpResponse("Invalid credentials.")
         except Exception as e:
             return HttpResponse(f"Error during login: {e}")
+        
+
 def infrastructure_data_monitor(request):
     if(request.user.is_anonymous):
         return redirect("/api/login_page")

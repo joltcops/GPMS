@@ -7,6 +7,15 @@
 </head>
 <body>
 
+    <div class="topbar">
+        <div class="topbar-left">GPMS</div>
+        <div class="topbar-right">
+            <a href="{% url 'emp_home' emp.employee_id %}">Home</a>
+            <a href="{% url 'emp_detail' emp.employee_id %}">Profile</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
     <div class="citizen-list-container">
         <h1>Citizen List</h1>
         <table class="citizen-table">
@@ -21,7 +30,7 @@
                 {% for citizen in citizens %}
                     <tr>
                         <td>{{ citizen.citizen_id }}</td>
-                        <td><a href="{% url 'emp_citizen_detail' citizen.citizen_id %}">{{ citizen.name }}</a></td>
+                        <td><a href="{% url 'emp_citizen_detail' citizen.citizen_id emp.employee_id %}">{{ citizen.name }}</a></td>
                         <td>
                             <button class="delete-button" onclick="confirmDelete('{{ citizen.citizen_id }}', '{{ citizen.name }}')">
                                 Delete

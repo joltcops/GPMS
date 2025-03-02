@@ -79,7 +79,7 @@ class panchayat_employees(models.Model):
         managed=True
 
     def __str__(self):
-        return self.citizen.name
+        return self.employee_id
 
 
 class assets(models.Model):
